@@ -74,10 +74,6 @@ class Ts2Img(object):
     imgwriter: object
         writer object that implements a write_ts method that takes
         a list of grid point indices and a 2D array containing the time series data
-    startdate: type
-        description
-    enddate: type
-        description
     agg_func: function
         function that takes a pandas DataFrame and returns
         an aggregated pandas DataFrame
@@ -88,7 +84,7 @@ class Ts2Img(object):
     """
 
     def __init__(self, tsreader, imgwriter,
-                 startdate, enddate, agg_func=None,
+                 agg_func=None,
                  ts_buffer=1000):
 
         self.agg_func = agg_func
@@ -96,11 +92,9 @@ class Ts2Img(object):
             try:
                 self.agg_func = tsreader.agg_ts2img
             except AttributeError:
-                self.agg_func = agg_ts2img
+                self.agg_func = agg_tsmonthly
         self.tsreader = tsreader
         self.imgwriter = imgwriter
-        self.startdate = startdate
-        self.enddate = enddate
         self.ts_buffer = ts_buffer
 
     def calc(self, **tsaggkw):
@@ -158,9 +152,14 @@ class Ts2Img(object):
             i += 1
             if i >= self.ts_buffer:
                 for key in ts_bulk:
-                    ts_bulk[key] = np.hstack(ts_bulk[key])
+                    ts_bulk[key] = np.vstack(ts_bulk[key])
                 gpi_array = np.hstack(gpi_bulk)
                 yield gpi_array, ts_bulk
                 ts_bulk = {}
                 gpi_bulk = []
                 i = 0
+        if i > 0:
+            for key in ts_bulk:
+                ts_bulk[key] = np.vstack(ts_bulk[key])
+            gpi_array = np.hstack(gpi_bulk)
+            yield gpi_array, ts_bulk
