@@ -33,14 +33,14 @@ Created on Mar 17, 2014
 '''
 
 
-import rsdata.base_io.netcdf.netcdf_dataset as nc
-import pytesmo.grid.grids as grids
+import pynetcf.time_series as nc
+import pygeogrids.grids as grids
 import pytesmo.grid.resample as resamp
 import numpy as np
 import os
 from datetime import timedelta, datetime
-import pytesmo
-import pytesmo.grid.netcdf as grid2nc
+import pygeogrids
+import pygeogrids.netcdf as grid2nc
 
 
 class Img2TsError(Exception):
@@ -174,7 +174,7 @@ class Img2Ts(object):
         # this is just a dirty hack until grids have a method
         # to check their grid type
         if (type(self.target_grid) == grids.BasicGrid or
-            (pytesmo.grid.grids.BasicGrid in type(self.target_grid).__bases__ and
+            (pygeogrids.grids.BasicGrid in type(self.target_grid).__bases__ and
              len(type(self.target_grid).__bases__))) == 1:
 
             self.target_grid = self.target_grid.to_cell_grid(cellsize_lat=cellsize_lat,
@@ -475,7 +475,7 @@ class Img2Ts(object):
 
 if __name__ == '__main__':
     import rsdata.GLDAS_NOAH.interface as GLDAS
-    import general.root_path as root
+    import rsdata.root_path as root
 
     # outputpath = os.path.join(root.d, 'GIO GL', 'Evolution', 'SWI_NRT_validation', 'GLDAS',
     #                           'raw')
