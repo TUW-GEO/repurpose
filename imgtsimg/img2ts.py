@@ -150,9 +150,10 @@ class Img2Ts(object):
                  r_methods='nn', r_weightf=None, r_min_n=1, r_radius=18000,
                  r_neigh=8, r_fill_values=None, filename_templ='%04d.nc',
                  gridname='grid.nc', global_attr=None, ts_attributes=None,
-                 ts_dtypes=None, time_units="days since  1858-11-17 00:00:00"):
+                 ts_dtypes=None, time_units="days since  1858-11-17 00:00:00", zlib=False):
 
         self.imgin = input_dataset
+        self.zlib = zlib
 
         if self.imgin.grid is None and target_grid is None:
             raise ValueError("Either the input dataset has to have a grid or "
@@ -260,7 +261,7 @@ class Img2Ts(object):
                         os.path.join(self.outputpath,
                                      self.filename_templ % cell),
                             n_loc=cell_gpis.size, mode='a',
-                            zlib=False,
+                            zlib=self.zlib,
                             unlim_chunksize=self.unlim_chunksize,
                             time_units=self.time_units) as dataout:
 
@@ -289,7 +290,7 @@ class Img2Ts(object):
                                                          self.filename_templ %
                                                          cell),
                                             n_loc=cell_gpis.size, mode='a',
-                                            zlib=False,
+                                            zlib=self.zlib,
                                             unlim_chunksize=self.unlim_chunksize,
                                             time_units=self.non_ortho_time_units) as dataout:
 
