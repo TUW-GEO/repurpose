@@ -142,6 +142,9 @@ class Img2Ts(object):
         Default: "days since  1858-11-17 00:00:00" which is modified julian date
         for regular images this can be set freely since the conversion is done
         automatically, for images with irregular timestamp this will be ignored for now
+    zlib: boolean, optional
+        if True the saved netCDF files will be compressed
+        Default: False
     """
 
     def __init__(self, input_dataset, outputpath, startdate, enddate,
