@@ -19,13 +19,7 @@ __location__ = os.path.join(os.getcwd(), os.path.dirname(
 
 package = "imgtsimg"
 namespace = []
-root_pkg = namespace[0] if namespace else package
 namespace_pkg = ".".join([namespace[-1], package]) if namespace else package
-output_dir = os.path.join(__location__, "../docs/_rst")
-module_dir = os.path.join(__location__, "..", root_pkg)
-cmd_line_template = "sphinx-apidoc -f -o {outputdir} {moduledir}"
-cmd_line = cmd_line_template.format(outputdir=output_dir, moduledir=module_dir)
-apidoc.main(cmd_line.split(" "))
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -110,7 +104,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
