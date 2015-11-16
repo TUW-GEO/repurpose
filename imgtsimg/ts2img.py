@@ -35,6 +35,7 @@ Created on Mon Apr 20 11:08:58 2015
 
 import numpy as np
 
+
 def agg_tsmonthly(ts, **kwargs):
     """
     Parameters
@@ -56,6 +57,7 @@ def agg_tsmonthly(ts, **kwargs):
     # aggregate to monthly timestamp
     # should also make sure that the output has a certain length
     return ts.asfreq("M")
+
 
 class Ts2Img(object):
 
@@ -137,7 +139,7 @@ class Ts2Img(object):
             # get grid points can return either 3 or 4 values
             # depending on the grid type, gpis is the first in both cases
             gpi_info = list(self.tsreader.grid.grid_points())
-            gpis = np.array(gpi_info, dtype=np.int)[:, 0]
+            gpis = np.array(gpi_info[0], dtype=np.int)
         for gpi in gpis:
             gpi_bulk.append(gpi)
             ts = self.tsreader.read_ts(gpi)
