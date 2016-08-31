@@ -26,7 +26,7 @@ git_full = "$Format:%H$"
 
 # general settings
 tag_prefix = 'v'  # tags are like v1.2.0
-package = "imgtsimg"
+package = "repurpose"
 namespace = []
 root_pkg = namespace[0] if namespace else package
 if namespace:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-    Setup file for imgtsimg.
+    Setup file for repurpose.
 
     This file was generated with PyScaffold 2.4.4, a tool that easily
     puts up a scaffold for your new Python project. Learn more under:

@@ -18,7 +18,7 @@
 #+LATEX_HEADER_EXTRA:
 #+DATE: \today
 
-#+BEGIN_SRC python :exports none :tangle ../imgtsimg/ts2img.py
+#+BEGIN_SRC python :exports none :tangle ../repurpose/ts2img.py
   # Copyright (c) 2015,Vienna University of Technology,
   # Department of Geodesy and Geoinformation
   # All rights reserved.
@@ -129,7 +129,7 @@ series could look like [[agg_tsmonthly]]
 
 #+NAME: agg_tsmonthly
 #+CAPTION: Simple example of a aggregation function
-#+begin_src python :exports code :tangle ../imgtsimg/ts2img.py
+#+begin_src python :exports code :tangle ../repurpose/ts2img.py
 def agg_tsmonthly(ts, **kwargs):
     """
     Parameters
@@ -179,7 +179,7 @@ If the tsreader implements a method called agg_ts2img this function
 will be used instead.
 
 #+NAME: ts2img
-#+BEGIN_SRC python :exports code :tangle ../imgtsimg/ts2img.py
+#+BEGIN_SRC python :exports code :tangle ../repurpose/ts2img.py
   class Ts2Img(object):
 
       """

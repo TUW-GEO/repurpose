@@ -25,7 +25,7 @@ import pandas as pd
 import numpy as np
 import numpy.testing as nptest
 
-from imgtsimg.ts2img import Ts2Img, agg_tsmonthly
+from repurpose.ts2img import Ts2Img, agg_tsmonthly
 # make a mock read and write class for basic testing of the program logic
 
 

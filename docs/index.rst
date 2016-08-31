@@ -1,8 +1,8 @@
 ========
-imgtsimg
+repurpose
 ========
 
-This is the documentation of **imgtsimg**.
+This is the documentation of **repurpose**.
 
 .. note::
 

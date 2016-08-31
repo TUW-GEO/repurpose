@@ -5,7 +5,7 @@ This is a skeleton file that can serve as a starting point for a Python
 console script. To run this script uncomment the following line in the
 console_scripts section in setup.cfg:
 
-    hello_world = imgtsimg.skeleton:run
+    hello_world = repurpose.skeleton:run
 
 Then run `python setup.py install` which will install the command `hello_world`
 inside your current environment.
@@ -20,7 +20,7 @@ import argparse
 import sys
 import logging
 
-from imgtsimg import __version__
+from repurpose import __version__
 
 __author__ = "Christoph Paulik"
 __copyright__ = "Christoph Paulik"
@@ -42,7 +42,7 @@ def parse_args(args):
         '-v',
         '--version',
         action='version',
-        version='imgtsimg {ver}'.format(ver=__version__))
+        version='repurpose {ver}'.format(ver=__version__))
     return parser.parse_args(args)
 
 

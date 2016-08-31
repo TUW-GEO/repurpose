@@ -17,7 +17,7 @@ from sphinx import apidoc
 __location__ = os.path.join(os.getcwd(), os.path.dirname(
     inspect.getfile(inspect.currentframe())))
 
-package = "imgtsimg"
+package = "repurpose"
 namespace = []
 namespace_pkg = ".".join([namespace[-1], package]) if namespace else package
 
@@ -50,7 +50,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'imgtsimg'
+project = u'repurpose'
 copyright = u'2015, Christoph Paulik'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -182,7 +182,7 @@ html_static_path = ['_static']
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'imgtsimg-doc'
+htmlhelp_basename = 'repurpose-doc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -201,7 +201,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'user_guide.tex', u'imgtsimg Documentation',
+  ('index', 'user_guide.tex', u'repurpose Documentation',
    u'Christoph Paulik', 'manual'),
 ]
 
