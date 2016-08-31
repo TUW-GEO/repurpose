@@ -26,8 +26,8 @@ The readers and writers have to conform to the API specifications of the base
 classes defined in `pygeobase <https://github.com/TUW-GEO/pygeobase>`_ to work
 without adpation.
 
-Contents
-========
+Modules
+=======
 
 It includes two main modules:
 
