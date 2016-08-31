@@ -9,7 +9,7 @@ Contents
    Thinking behind ts2img <ts2img>
    License <license>
    Authors <authors>
-   Module Reference <_rst/modules>
+   Module Reference <api/modules>
 
 
 Indices and tables
