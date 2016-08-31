@@ -2,6 +2,18 @@
 repurpose
 =========
 
+.. image:: https://travis-ci.org/TUW-GEO/repurpose.svg?branch=master
+    :target: https://travis-ci.org/TUW-GEO/repurpose
+
+.. image:: https://coveralls.io/repos/github/TUW-GEO/repurpose/badge.svg?branch=master
+   :target: https://coveralls.io/github/TUW-GEO/repurpose?branch=master
+
+.. image:: https://badge.fury.io/py/repurpose.svg
+    :target: http://badge.fury.io/py/repurpose
+
+.. image:: https://zenodo.org/badge/12761/TUW-GEO/repurpose.svg
+   :target: https://zenodo.org/badge/latestdoi/12761/TUW-GEO/repurpose
+
 This package provides routines for the conversion of image formats to time
 series and vice versa. It is part of the `poets° project
 <http://tuw-geo.github.io/poets/>`_ and works best with the readers and writers
@@ -23,6 +35,14 @@ It includes two main modules:
   spatial resampling.
 - ``ts2img`` for time series to image conversion, including support for temporal
   resampling. This module is very experimental at the moment.
+
+Documentation
+=============
+
+|Documentation Status|
+
+.. |Documentation Status| image:: https://readthedocs.org/projects/repurpose/badge/?version=latest
+   :target: http://repurpose.readthedocs.org/
 
 Alternatives
 ============
