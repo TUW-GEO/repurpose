@@ -20,7 +20,7 @@ Contents
 It includes two main modules:
 
 - ``img2ts`` for image/swath to time series conversion, including support for
-  spatial resampling. The functionality is already used 
+  spatial resampling.
 - ``ts2img`` for time series to image conversion, including support for temporal
   resampling. This module is very experimental at the moment.
 
