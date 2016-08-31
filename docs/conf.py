@@ -10,12 +10,22 @@
 
 import sys
 import os
-import inspect
-from sphinx import apidoc
 
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if on_rtd:
 
-__location__ = os.path.join(os.getcwd(), os.path.dirname(
-    inspect.getfile(inspect.currentframe())))
+    import inspect
+    from sphinx import apidoc
+
+    __location__ = os.path.join(os.getcwd(), os.path.dirname(
+        inspect.getfile(inspect.currentframe())))
+
+    output_dir = os.path.join(__location__, "../docs/api")
+    module_dir = os.path.join(__location__, "../repurpose")
+    cmd_line_template = "sphinx-apidoc -f -o {outputdir} {moduledir}"
+    cmd_line = cmd_line_template.format(
+        outputdir=output_dir, moduledir=module_dir)
+    apidoc.main(cmd_line.split(" "))
 
 package = "repurpose"
 namespace = []
