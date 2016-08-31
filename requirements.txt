@@ -2,6 +2,4 @@
 numpy
 pygeogrids>=0.1.3
 pytesmo>=0.3.0
-
-# internal packages
 pynetcf
