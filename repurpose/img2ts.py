@@ -402,7 +402,7 @@ class Img2Ts(object):
             try:
                 (input_img, metadata,
                  image_datetime, lon,
-                 lat, time_arr) = img_iterator.next()
+                 lat, time_arr) = next(img_iterator)
             except IOError as e:
                 logging.log(logging.INFO, e.message)
                 continue
