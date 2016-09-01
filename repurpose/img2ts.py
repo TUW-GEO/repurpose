@@ -81,6 +81,11 @@ class Img2Ts(object):
     input_kwargs : dict, optional
         keyword arguments which should be used in the read_img method of the
         input_dataset
+    input_grid : grid instance as defined in :module:`pytesmo.grids.grid`, optional
+        the grid on which input data is stored.
+        If not given then the grid of the input dataset will be used.
+        If the input dataset has no grid object then resampling to the
+        target_grid is performed.
     target_grid : grid instance as defined in :module:`pytesmo.grids.grid`, optional
         the grid on which the time series will be stored.
         If not given then the grid of the input dataset will be used
@@ -148,7 +153,7 @@ class Img2Ts(object):
     """
 
     def __init__(self, input_dataset, outputpath, startdate, enddate,
-                 input_kwargs={}, target_grid=None, imgbuffer=100, variable_rename=None,
+                 input_kwargs={}, input_grid=None, target_grid=None, imgbuffer=100, variable_rename=None,
                  unlim_chunksize=100, cellsize_lat=180.0, cellsize_lon=360.0,
                  r_methods='nn', r_weightf=None, r_min_n=1, r_radius=18000,
                  r_neigh=8, r_fill_values=None, filename_templ='%04d.nc',
@@ -157,20 +162,25 @@ class Img2Ts(object):
 
         self.imgin = input_dataset
         self.zlib = zlib
+        if not hasattr(self.imgin, 'grid'):
+            self.input_grid = input_grid
+        else:
+            self.input_grid = self.imgin.grid
 
-        if self.imgin.grid is None and target_grid is None:
-            raise ValueError("Either the input dataset has to have a grid or "
-                             "outgrid has to be set")
+        if self.input_grid is None and target_grid is None:
+            raise ValueError("Either the input dataset has to have a grid, "
+                             "input_grid has to be specified or "
+                             "target_grid has to be set")
 
         self.input_kwargs = input_kwargs
 
         self.target_grid = target_grid
         if self.target_grid is None:
-            self.target_grid = self.imgin.grid
+            self.target_grid = self.input_grid
             self.resample = False
         else:
             # if input and target grid are not equal resampling is required
-            if self.imgin.grid != self.target_grid:
+            if self.input_grid != self.target_grid:
                 self.resample = True
 
         # if the target grid is not a cell grid make it one
