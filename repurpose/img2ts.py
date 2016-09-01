@@ -38,7 +38,8 @@ import pygeogrids.grids as grids
 import pytesmo.grid.resample as resamp
 import numpy as np
 import os
-from datetime import timedelta, datetime
+from datetime import datetime
+import logging
 import pygeogrids
 import pygeogrids.netcdf as grid2nc
 
@@ -359,7 +360,7 @@ class Img2Ts(object):
 
             data = {}
             output_array = None
-            print datetime.now() - start_time
+            logging.log(logging.INFO, datetime.now() - start_time)
 
     def img_bulk(self):
         """
@@ -403,12 +404,12 @@ class Img2Ts(object):
                  image_datetime, lon,
                  lat, time_arr) = img_iterator.next()
             except IOError as e:
-                print e.message
+                logging.log(logging.INFO, e.message)
                 continue
             except StopIteration:
                 break
             read_images += 1
-            print "read", image_datetime.isoformat()
+            logging.log(logging.INFO, "read" + image_datetime.isoformat())
             if self.resample:
 
                 if time_arr is not None:
