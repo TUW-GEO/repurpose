@@ -1,0 +1,5 @@
+# requirements for testing the package
+# I think it makes little sense to mock the writer classes in the tests
+# so we will use real classes
+pynetcf
+pygeobase
