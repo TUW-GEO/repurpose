@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.3
+===========
+
+- Enable image to timeseries conversion if missing images are encountered.
+
 Version 0.2
 ===========
 

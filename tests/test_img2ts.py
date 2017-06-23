@@ -50,6 +50,8 @@ class TestImageDataset(ImageBase):
 
     def read(self, timestamp=None, additional_kw=None):
 
+        if timestamp == datetime(2016, 1, 1):
+            raise IOError("no data for day")
         # 2x2 pixels around zero lat, lon
         return Image(np.array([0.5, 0.5,
                                -0.5, -0.5]),
@@ -125,6 +127,36 @@ def test_img2ts_daily_no_resampling():
                                 np.arange(1, 32, dtype=np.float),
                                 np.arange(1, 22, dtype=np.float)])
     dates_should = ds_in.tstamps_for_daterange(start, end)
+    img2ts.calc()
+    ts_file = os.path.join(outputpath, '0000.nc')
+    with OrthoMultiTs(ts_file) as ds:
+        ts = ds.read_ts('var1', 0)
+        nptest.assert_allclose(ts['var1'], ts_should)
+        assert dates_should == list(ts['time'])
+        nptest.assert_allclose(ds.dataset.variables['location_id'][:],
+                               np.array([0, 1, 2, 3]))
+
+
+def test_img2ts_daily_no_resampling_missing_day():
+    """
+    Test resampling over missing day 2016-01-01 (see reader above)
+    """
+    input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
+                           np.array([1, -1, 1, -1]), )
+
+    outputpath = tempfile.mkdtemp()
+    start = datetime(2015, 12, 5)
+    end = datetime(2016, 1, 10)
+
+    ds_in = TestMultiTemporalImageDatasetDaily()
+    img2ts = Img2Ts(ds_in,
+                    outputpath, start, end, imgbuffer=15,
+                    input_grid=input_grid)
+
+    ts_should = np.concatenate([np.arange(5, 32, dtype=np.float),
+                                np.arange(2, 11, dtype=np.float)])
+    dates_should = ds_in.tstamps_for_daterange(start, end)
+    dates_should.remove(datetime(2016, 1, 1))
     img2ts.calc()
     ts_file = os.path.join(outputpath, '0000.nc')
     with OrthoMultiTs(ts_file) as ds:
