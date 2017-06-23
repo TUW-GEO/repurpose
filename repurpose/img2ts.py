@@ -391,23 +391,18 @@ class Img2Ts(object):
         # image counter
         read_images = 0
 
-        # call the img_iterator in a infinite loop so that we are able
-        # to catch exceptions properly
-        # if an exception bubbles up the iterator stops and
-        # we must read the next image.
-        img_generator = self.imgin.iter_images(
-            self.startdate, self.enddate, **self.input_kwargs)
-        img_iterator = iter(img_generator)
-        while True:
+        dates = self.imgin.tstamps_for_daterange(self.startdate,
+                                                 self.enddate)
+        for date in dates:
             try:
                 (input_img, metadata,
                  image_datetime, lon,
-                 lat, time_arr) = next(img_iterator)
+                 lat, time_arr) = self.imgin.read(date, **self.input_kwargs)
             except IOError as e:
-                logging.log(logging.INFO, e.message)
+                msg = "I/O error({0}): {1}".format(e.errno,
+                                                   e.strerror)
+                logging.log(logging.INFO, msg)
                 continue
-            except StopIteration:
-                break
             read_images += 1
             logging.log(logging.INFO, "read" + image_datetime.isoformat())
             if self.resample:
