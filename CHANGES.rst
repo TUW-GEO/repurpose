@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.4
+===========
+
+- Enable compression by default.
+
 Version 0.3
 ===========
 
