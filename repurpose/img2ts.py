@@ -150,7 +150,7 @@ class Img2Ts(object):
         automatically, for images with irregular timestamp this will be ignored for now
     zlib: boolean, optional
         if True the saved netCDF files will be compressed
-        Default: False
+        Default: True
     """
 
     def __init__(self, input_dataset, outputpath, startdate, enddate,
@@ -159,7 +159,7 @@ class Img2Ts(object):
                  r_methods='nn', r_weightf=None, r_min_n=1, r_radius=18000,
                  r_neigh=8, r_fill_values=None, filename_templ='%04d.nc',
                  gridname='grid.nc', global_attr=None, ts_attributes=None,
-                 ts_dtypes=None, time_units="days since 1858-11-17 00:00:00", zlib=False):
+                 ts_dtypes=None, time_units="days since 1858-11-17 00:00:00", zlib=True):
 
         self.imgin = input_dataset
         self.zlib = zlib
