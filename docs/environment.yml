@@ -3,11 +3,12 @@ channels:
   - conda-forge
 dependencies:
 - netcdf4
-- numpy=1.11.1=py27_0
+- numpy
 - scipy
 - pandas
 - matplotlib
 - pyresample
+- python=3.6
 - pip:
     - pynetcf
     - pytesmo
