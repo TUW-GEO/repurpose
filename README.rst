@@ -14,6 +14,10 @@ repurpose
 .. image:: https://zenodo.org/badge/12761/TUW-GEO/repurpose.svg
    :target: https://zenodo.org/badge/latestdoi/12761/TUW-GEO/repurpose
 
+.. image:: https://readthedocs.org/projects/repurpose/badge/?version=latest
+   :target: http://repurpose.readthedocs.org/
+
+
 This package provides routines for the conversion of image formats to time
 series and vice versa. It is part of the `poets° project
 <http://tuw-geo.github.io/poets/>`_ and works best with the readers and writers
@@ -26,6 +30,23 @@ The readers and writers have to conform to the API specifications of the base
 classes defined in `pygeobase <https://github.com/TUW-GEO/pygeobase>`_ to work
 without adpation.
 
+Citation
+========
+
+If you use the software in a publication then please cite it using the Zenodo DOI:
+
+.. image:: https://zenodo.org/badge/12761/TUW-GEO/repurpose.svg
+   :target: https://zenodo.org/badge/latestdoi/12761/TUW-GEO/repurpose
+
+Installation
+============
+
+This package should be installable through pip:
+
+.. code::
+
+    pip install repurpose
+
 Modules
 =======
 
@@ -35,14 +56,6 @@ It includes two main modules:
   spatial resampling.
 - ``ts2img`` for time series to image conversion, including support for temporal
   resampling. This module is very experimental at the moment.
-
-Documentation
-=============
-
-|Documentation Status|
-
-.. |Documentation Status| image:: https://readthedocs.org/projects/repurpose/badge/?version=latest
-   :target: http://repurpose.readthedocs.org/
 
 Alternatives
 ============
@@ -60,6 +73,30 @@ might be better suited to your needs.
   know.
 - `netCDF Operators (NCO) <http://nco.sourceforge.net/#Definition>`_ are similar
   to CDO with a stronger focus on netCDF.
+
+Contribute
+==========
+
+We are happy if you want to contribute. Please raise an issue explaining what
+is missing or if you find a bug. We will also gladly accept pull requests
+against our master branch for new features or bug fixes.
+
+Development setup
+-----------------
+
+For Development we recommend a ``conda`` environment
+
+Guidelines
+----------
+
+If you want to contribute please follow these steps:
+
+- Fork the repurpose repository to your account
+- make a new feature branch from the repurpose master branch
+- Add your feature
+- Please include tests for your contributions in one of the test directories.
+  We use py.test so a simple function called test_my_feature is enough
+- submit a pull request to our master branch
 
 Note
 ====
