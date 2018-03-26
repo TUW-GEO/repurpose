@@ -11,9 +11,6 @@ repurpose
 .. image:: https://badge.fury.io/py/repurpose.svg
     :target: http://badge.fury.io/py/repurpose
 
-.. image:: https://zenodo.org/badge/12761/TUW-GEO/repurpose.svg
-   :target: https://zenodo.org/badge/latestdoi/12761/TUW-GEO/repurpose
-
 .. image:: https://readthedocs.org/projects/repurpose/badge/?version=latest
    :target: http://repurpose.readthedocs.org/
 
@@ -33,10 +30,17 @@ without adpation.
 Citation
 ========
 
-If you use the software in a publication then please cite it using the Zenodo DOI:
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.593577.svg
+   :target: https://doi.org/10.5281/zenodo.593577
 
-.. image:: https://zenodo.org/badge/12761/TUW-GEO/repurpose.svg
-   :target: https://zenodo.org/badge/latestdoi/12761/TUW-GEO/repurpose
+If you use the software in a publication then please cite it using the Zenodo DOI.
+Be aware that this badge links to the latest package version.
+
+Please select your specific version at https://doi.org/10.5281/zenodo.593577 to get the DOI of that version.
+You should normally always use the DOI for the specific version of your record in citations.
+This is to ensure that other researchers can access the exact research artefact you used for reproducibility.
+
+You can find additional information regarding DOI versioning at http://help.zenodo.org/#versioning
 
 Installation
 ============
