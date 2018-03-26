@@ -6,6 +6,7 @@ Version 0.X
 ===========
 
 - Update readme
+- Update pyscaffold version in setup.py because of compatibility issues with setuptools 39
 
 Version 0.4
 ===========
