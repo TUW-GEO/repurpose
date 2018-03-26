@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 0.X
+Version 0.5
 ===========
 
 - Update readme
