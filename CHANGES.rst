@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.6
+===========
+
+- Update setup.cfg
+
 Version 0.5
 ===========
 
