@@ -31,7 +31,7 @@ install:
 
   - conda create -q -n test-environment -c conda-forge python=$TRAVIS_PYTHON_VERSION numpy scipy
   - source activate test-environment
-  - pip install pytesmo
+  - pip install pytesmo pyresample
   - pip install .
   - pip list
   - which pip
