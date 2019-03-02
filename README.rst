@@ -16,7 +16,7 @@ repurpose
 
 
 This package provides routines for the conversion of image formats to time
-series and vice versa. It is part of the `poets° project
+series and vice versa. It is part of the `poets project
 <http://tuw-geo.github.io/poets/>`_ and works best with the readers and writers
 supported there. The main use case is for data that is sampled irregularly in
 space or time. If you have data that is sampled in regular intervals then there
