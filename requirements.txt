@@ -3,3 +3,4 @@ numpy
 pygeogrids>=0.1.3
 pynetcf
 pyresample
+more_itertools
