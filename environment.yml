@@ -12,4 +12,3 @@ dependencies:
     - pygeogrids
     - pynetcf
     - pyresample
-    - more_itertools
