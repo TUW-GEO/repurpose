@@ -9,7 +9,6 @@ dependencies:
   - scipy
   - pip
   - pip:
-    - pytesmo
     - pygeogrids
     - pynetcf
     - pyresample
