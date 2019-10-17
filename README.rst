@@ -60,6 +60,8 @@ It includes two main modules:
   spatial resampling.
 - ``ts2img`` for time series to image conversion, including support for temporal
   resampling. This module is very experimental at the moment.
+- ``resample`` for spatial resampling of (regular or irregular) gridded data
+to different resolutions.
 
 Alternatives
 ============

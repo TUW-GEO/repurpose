@@ -1,4 +1,6 @@
 .. include:: ../README.rst
+.. include:: ts2img.rst
+.. include:: resample.rst
 
 Contents
 ========
