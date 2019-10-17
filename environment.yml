@@ -1,0 +1,15 @@
+# List of conda and pip packages that are should be install when developing the packages
+# To create the full conda environment: conda env create -f environment.yml
+name: repurpose
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy
+  - scipy
+  - pip
+  - pip:
+    - pygeogrids
+    - pynetcf
+    - pyresample
+    - more_itertools

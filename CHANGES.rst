@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Unreleased
+==========
+
+- Add resample functions (from pytesmo)
+
 Version 0.6
 ===========
 

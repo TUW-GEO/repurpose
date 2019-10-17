@@ -35,7 +35,7 @@ Created on Mar 17, 2014
 
 import pynetcf.time_series as nc
 import pygeogrids.grids as grids
-import pytesmo.grid.resample as resamp
+import repurpose.resample as resamp
 import numpy as np
 import os
 from datetime import datetime
