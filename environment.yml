@@ -6,7 +6,6 @@ channels:
   - defaults
 dependencies:
   - numpy
-  - scipy
   - pip
   - pip:
     - pygeogrids
