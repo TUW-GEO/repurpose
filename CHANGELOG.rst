@@ -5,6 +5,18 @@ Changelog
 Unreleased
 ==========
 
+-
+
+Version 0.8
+===========
+
+- Update pyscaffold package structure (pyscaffold 3)
+- Drop py2 support
+- Add pypi deployment to travis.
+
+Version 0.7
+===========
+
 - Add resample functions (from pytesmo)
 
 Version 0.6
