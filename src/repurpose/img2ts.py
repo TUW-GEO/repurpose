@@ -178,13 +178,8 @@ class Img2Ts(object):
                 self.resample = True
 
         # if the target grid is not a cell grid make it one
-        # default is just one cell for the
-        # this is just a dirty hack until grids have a method
-        # to check their grid type
-        if (type(self.target_grid) == grids.BasicGrid or
-            (pygeogrids.grids.BasicGrid in type(self.target_grid).__bases__ and
-             len(type(self.target_grid).__bases__))) == 1:
-
+        # default is just one cell for the entire grid
+        if hasattr(self.target_grid, "get_cells"):
             self.target_grid = self.target_grid.to_cell_grid(cellsize_lat=cellsize_lat,
                                                              cellsize_lon=cellsize_lon)
         self.currentdate = startdate
