@@ -52,18 +52,8 @@ class Img2Ts(object):
     Parameters
     ----------
     input_dataset : DatasetImgBase like class instance
-        must implement a daily_images iterator that yields
-        data : dict
-            dictionary of numpy arrays that hold the image data for each variable
-            of the dataset
-        timestamp : exact timestamp of the image
-        lon : numpy.array or None
-            array of longitudes, if None self.grid will be assumed
-        lat : numpy.array or None
-            array of latitudes, if None self.grid will be assumed
-        jd : numpy.array or None
-            array of observation times in julian days, if None all
-            observations have the same timestamp
+        must implement a ``read(date, **input_kwargs)`` iterator that returns a
+        `pygeobase.object_base.Image`.
     outputpath : string
         path where to save the time series to
     startdate : date
