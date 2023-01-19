@@ -169,7 +169,7 @@ class Img2Ts(object):
 
         # if the target grid is not a cell grid make it one
         # default is just one cell for the entire grid
-        if isinstance(self.target_grid, grids.CellGrid):
+        if not isinstance(self.target_grid, grids.CellGrid):
             self.target_grid = self.target_grid.to_cell_grid(cellsize_lat=cellsize_lat,
                                                              cellsize_lon=cellsize_lon)
         self.currentdate = startdate
