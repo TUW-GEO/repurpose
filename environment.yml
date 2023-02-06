@@ -6,9 +6,14 @@ channels:
   - defaults
 dependencies:
   - numpy
+  - pyresample
+  - netCDF4
   - pip
   - pip:
     - pygeogrids
     - pynetcf
-    - pyresample
     - more_itertools
+    - sphinx_rtd_theme
+    - pytest
+    - pytest-cov
+    - yapf

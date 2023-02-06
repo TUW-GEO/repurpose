@@ -130,7 +130,7 @@ class Ts2Img(object):
             # get grid points can return either 3 or 4 values
             # depending on the grid type, gpis is the first in both cases
             gpi_info = list(self.tsreader.grid.grid_points())
-            gpis = np.array(gpi_info[0], dtype=np.int)
+            gpis = np.array(gpi_info[0], dtype=int)
         for gpi in gpis:
             gpi_bulk.append(gpi)
             ts = self.tsreader.read_ts(gpi)

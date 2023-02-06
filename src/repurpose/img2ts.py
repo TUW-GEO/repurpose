@@ -272,10 +272,10 @@ class Img2Ts(object):
                         dataout.add_global_attr(
                             'geospatial_lon_max', np.max(cell_lons))
 
-                        dataout.write_ts_all_loc(cell_gpis, data, dates,
-                                                 lons=cell_lons,
-                                                 lats=cell_lats,
-                                                 attributes=self.ts_attributes)
+                        dataout.write_all(cell_gpis, data, dates,
+                                          lons=cell_lons,
+                                          lats=cell_lats,
+                                          attributes=self.ts_attributes)
                 elif not self.orthogonal:
 
                     with nc.IndexedRaggedTs(os.path.join(self.outputpath,
