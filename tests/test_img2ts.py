@@ -112,7 +112,7 @@ class TestMultiTemporalImageDatasetDaily(MultiTemporalImageBase):
 
 def test_img2ts_daily_no_resampling():
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
-                           np.array([1, -1, 1, -1]), ).to_cell_grid(5)
+                           np.array([1, -1, 1, -1]), )
 
     with tempfile.TemporaryDirectory() as outputpath:
         start = datetime(2014, 2, 5)
@@ -143,7 +143,7 @@ def test_img2ts_daily_no_resampling_missing_day():
     Test resampling over missing day 2016-01-01 (see reader above)
     """
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
-                           np.array([1, -1, 1, -1]), ).to_cell_grid(5)
+                           np.array([1, -1, 1, -1]), )
 
     with tempfile.TemporaryDirectory() as outputpath:
         start = datetime(2015, 12, 5)
