@@ -2,10 +2,16 @@
 Changelog
 =========
 
-Unreleased
-==========
+Unreleased changes in master branch
+===================================
 
 -
+
+Version 0.9
+===========
+
+- Update for new pyscaffold
+- Fixed bug where resampling failed when a BasicGrid was passed instead of a CellGrid
 
 Version 0.8
 ===========
