@@ -2,8 +2,8 @@
 repurpose
 =========
 
-.. image:: https://travis-ci.org/TUW-GEO/repurpose.svg?branch=master
-    :target: https://travis-ci.org/TUW-GEO/repurpose
+.. image:: https://github.com/TUW-GEO/repurpose/workflows/Automated%20Tests/badge.svg?branch=master
+   :target: https://github.com/TUW-GEO/repurpose/actions
 
 .. image:: https://coveralls.io/repos/github/TUW-GEO/repurpose/badge.svg?branch=master
    :target: https://coveralls.io/github/TUW-GEO/repurpose?branch=master
@@ -45,11 +45,19 @@ You can find additional information regarding DOI versioning at http://help.zeno
 Installation
 ============
 
-This package should be installable through pip:
+This package depends on the following libraries that can be installed via
+conda or mamba
+
+.. code::
+
+    conda install -c conda-forge numpy netCDF4 pyresample
+
+Afterwards you can install this package and its pip dependecies via:
 
 .. code::
 
     pip install repurpose
+
 
 Modules
 =======
