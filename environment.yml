@@ -2,18 +2,18 @@
 # To create the full conda environment: conda env create -f environment.yml
 name: repurpose
 channels:
-  - conda-forge
   - defaults
+  - conda-forge
 dependencies:
   - numpy
   - pyresample
-  - netCDF4
+  - netcdf4!=1.6.2
   - pip
   - pip:
     - pygeogrids
     - pynetcf
     - more_itertools
     - sphinx_rtd_theme
+    - yapf
     - pytest
     - pytest-cov
-    - yapf
