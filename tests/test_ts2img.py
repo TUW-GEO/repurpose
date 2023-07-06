@@ -32,65 +32,35 @@ Module for testing time series to image conversion
 import pandas as pd
 import numpy as np
 import numpy.testing as nptest
+from repurpose.ts2img import Ts2Img
+from datetime import timedelta
+from pygeogrids.grids import CellGrid
 
-from repurpose.ts2img import Ts2Img, agg_tsmonthly
-# make a mock read and write class for basic testing of the program logic
+np.random.seed(123)
 
-
-class MockGrid(object):
-
-    """
-    FakeGrid
-    """
-
+class DummyReader:
     def __init__(self):
-        pass
+        self.index = pd.date_range('2020-02-01', '2020-07-31', freq='6H')
 
-    def grid_points(self):
+    def read(self, lon: float, lat: float):
         """
-        return 10 grid points
+        - random missing indices
+        - random time stamps
         """
-        return list(range(10)), None, None, None
+        ind = np.random.choice(np.arange(len(self.index)), int(len(self.index)*0.8))
+        index = self.index[ind].to_pydatetime()
+        timeoffset = [timedelta(seconds=int(s)) for s in np.random.choice(np.arange(0, 12*60*60), len(ind))]
+        data = {'var1': np.random.rand(len(ind)),
+                'var2': np.random.random_integers(0, 100, len(ind))}
+        df = pd.DataFrame(index=index+timeoffset, data=data).sort_index()
 
+        return df
 
-class MockReader(object):
+def test_ts2img():
+    reader = DummyReader()
 
-    """
-    Fake Dataset
-    """
-
-    def __init__(self, grid):
-        self.grid = grid
-
-    def read_ts(self, gpi):
-        rng = pd.date_range('1-1-2001', periods=72, freq='D')
-        return pd.DataFrame({'data': np.arange(72) + gpi}, index=rng)
-
-
-class MockWriter(object):
-
-    """
-    FakeWriter
-    """
-
-    def write_ts(self, gpis, ts):
-        assert list(gpis) == list(range(10))
-        nptest.assert_almost_equal(ts['data'], np.array([[30, 58], [31, 59],
-                                                         [32, 60], [33, 61],
-                                                         [34, 62], [35, 63],
-                                                         [36, 64], [37, 65],
-                                                         [38, 66], [39, 67]]))
-
-
-def test_ts2img_mock_datasets():
-    """
-    test the basic programatic logic of the ts2img
-    class by using mock datasets that only pass a pandas dataframe
-    through
-    """
-
-    grid = MockGrid()
-    inds = MockReader(grid)
-    outds = MockWriter()
-    converter = Ts2Img(inds, outds)
-    converter.calc()
+    conv = Ts2Img(reader, ['var1', 'var2'], '2020-07-20', '2020-08-01', resolution=1,
+           fill_values={'var2': -1})
+    conv.
+if __name__ == '__main__':
+    test_ts2img()
