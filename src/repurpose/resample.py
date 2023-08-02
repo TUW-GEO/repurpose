@@ -30,20 +30,20 @@ from pyresample import geometry, kd_tree
 import numpy as np
 
 
-def resample_to_grid_only_valid_return(input_data, src_lon, src_lat, target_lon, target_lat,
-                                       methods='nn', weight_funcs=None,
-                                       min_neighbours=1, search_rad=18000, neighbours=8,
-                                       fill_values=None):
+def resample_to_grid_only_valid_return(
+        input_data, src_lon, src_lat, target_lon, target_lat,
+        methods='nn', weight_funcs=None, min_neighbours=1, search_rad=18000,
+        neighbours=8, fill_values=None):
     """
     resamples data from dictionary of numpy arrays using pyresample
     to given grid.
-    Searches for the neighbours and then resamples the data
-    to the grid given in togrid if at least
-    min_neighbours neighbours are found
+    Searches for the neighbours and then resamples the data to the grid given
+    in to grid if at least min_neighbours neighbours are found
 
     Parameters
     ----------
     input_data : dict of numpy.arrays
+        Data to resample
     src_lon : numpy.array
         longitudes of the input data
     src_lat : numpy.array
@@ -76,6 +76,7 @@ def resample_to_grid_only_valid_return(input_data, src_lon, src_lat, target_lon,
         if given the output array will be filled with this value if no valid
         resampled value could be computed, if not a masked array will be returned
         can also be a dict with a fill value for each variable
+
     Returns
     -------
     data : dict of numpy.arrays
@@ -222,6 +223,7 @@ def resample_to_grid(input_data, src_lon, src_lat, target_lon, target_lat,
         if given the output array will be filled with this value if no valid
         resampled value could be computed, if not a masked array will be returned
         can also be a dict with a fill value for each variable
+
     Returns
     -------
     data : dict of numpy.arrays
@@ -289,3 +291,18 @@ def hamming_window(radius, distances):
     weights = alpha + (1 - alpha) * np.cos(np.pi / radius * distances)
 
     return weights
+
+
+
+if __name__ == '__main__':
+    from smecv_grid.grid import SMECV_Grid_v052
+    from pygeogrids.netcdf import load_grid
+    warp = load_grid("/home/wpreimes/Downloads/warp_dgg.nc")
+    qdeg = SMECV_Grid_v052(None)
+
+    data = warp.activegpis.astype(float)
+    out, mask = resample_to_grid_only_valid_return(
+        {'warp_gpi': data}, warp.activearrlon, warp.activearrlat,
+                     qdeg.activearrlon, qdeg.activearrlat,
+                     min_neighbours=1, search_rad=18000, neighbours=8,
+                     methods='nn', weight_funcs=None, fill_values=np.nan)
