@@ -14,7 +14,7 @@ from pynetcf.time_series import (
 from datetime import datetime
 import warnings
 
-from repurpose.image import RegularImageStack
+from repurpose.stack import Regular3dimImageStack
 
 """
 TODOs:
@@ -25,7 +25,7 @@ TODOs:
 """
 
 def _convert(converter: 'Ts2Img',
-             writer: RegularImageStack,
+             writer: Regular3dimImageStack,
              img_gpis: np.ndarray,
              lons: np.ndarray,
              lats: np.ndarray) -> xr.Dataset:
@@ -139,7 +139,7 @@ class Ts2Img:
                  max_dist=18000, time_collocation=True):
 
         self.ts_reader = ts_reader
-        self.img_grid: CellGrid = RegularImageStack._eval_grid(img_grid)
+        self.img_grid: CellGrid = Regular3dimImageStack._eval_grid(img_grid)
         self.timestamps = timestamps
 
         if variables is not None:
@@ -166,7 +166,7 @@ class Ts2Img:
         n_lons = np.unique(cellgrid.activearrlon).size
         cellgrid.shape = (n_lats, n_lons)
 
-        writer = RegularImageStack(
+        writer = Regular3dimImageStack(
             cellgrid, timestamps=timestamps_chunk, zlib=False,
             time_collocation=self.time_collocation)
 

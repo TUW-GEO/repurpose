@@ -18,7 +18,7 @@ TODOs:
 """
 
 
-class RegularImageStack:
+class Regular3dimImageStack:
 
     def __init__(self,
                  grid,

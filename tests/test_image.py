@@ -2,7 +2,7 @@ import numpy as np
 import unittest
 import os
 import pandas as pd
-from repurpose.image import RegularImageStack
+from repurpose.stack import Regular3dimImageStack
 import tempfile
 import pytest
 import xarray as xr
@@ -19,7 +19,7 @@ class TestRegularImageStackNoCollocation(unittest.TestCase):
     """
     def setUp(self) -> None:
         self.timestamps = pd.date_range('2020-01-01', '2020-01-02', freq='6H')
-        self.writer = RegularImageStack.from_genreg(
+        self.writer = Regular3dimImageStack.from_genreg(
             resolution=0.25, extent=bbox_spain, timestamps=self.timestamps,
             time_collocation=False, reference_time="1900-01-01T00:00:00",
             zlib=True)
@@ -133,7 +133,7 @@ class TestRegularImageStackWithCollocation(unittest.TestCase):
         grid_spain.shape = (np.unique(grid_spain.activearrlat).size,
                             np.unique(grid_spain.activearrlon).size)
 
-        self.writer = RegularImageStack(
+        self.writer = Regular3dimImageStack(
             grid=grid_spain, timestamps=self.img_timestamps, time_collocation=True,
             reference_time="1900-01-01T00:00:00", zlib=True)
 
