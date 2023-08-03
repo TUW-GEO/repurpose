@@ -15,6 +15,10 @@ dependencies:
   - pyproj
   - xarray
   - pip
+  # optional, for docs and testing
+  - nb_conda
+  - matplotlib
+  - ipykernel
   - pip:
     - pygeogrids
     - pynetcf>=0.5.0

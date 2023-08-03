@@ -19,6 +19,10 @@ from repurpose.stack import Regular3dimImageStack
 """
 TODOs:
 - add possibility to use resampling methods other than nearest neighbour
+    - integrate repurpose.resample module
+    - allows weighting functions etc.
+- add preprocessing and postprocessing keywords to change the input ts and 
+    output stack before writing
 - similar to resample, use multiple neighbours when available for image pixel
 - further harmonisation with pynetcf interface
 - time ranges for images instead of time stamps
