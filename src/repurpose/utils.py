@@ -19,7 +19,11 @@ import logging
 from multiprocessing import Pool
 from datetime import datetime
 import sys
+from pathlib import Path
 
+def rootdir() -> Path:
+    return Path(os.path.join(os.path.dirname(
+        os.path.abspath(__file__)))).parents[1]
 
 def idx_chunks(idx, n=-1):
     """

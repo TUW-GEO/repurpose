@@ -298,7 +298,7 @@ class Regular3dimImageStack:
         collocated["__distance_other"] = (
             collocated["__index_other"] - collocated.index)
 
-        # force int64, otherwise error under windows
+        # force int64, otherwise error on Windows
         offset_sec = collocated['__distance_other'].values.astype(
             np.int64) * 1e-9
 
