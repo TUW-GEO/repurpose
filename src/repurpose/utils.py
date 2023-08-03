@@ -21,9 +21,11 @@ from datetime import datetime
 import sys
 from pathlib import Path
 
+
 def rootdir() -> Path:
     return Path(os.path.join(os.path.dirname(
         os.path.abspath(__file__)))).parents[1]
+
 
 def idx_chunks(idx, n=-1):
     """
@@ -44,14 +46,14 @@ def idx_chunks(idx, n=-1):
 
 
 def parallel_process_async(
-    FUNC,
-    ITER_KWARGS,
-    STATIC_KWARGS=None,
-    n_proc=1,
-    show_progress_bars=True,
-    ignore_errors=False,
-    log_path=None,
-    debug_mode=False,
+        FUNC,
+        ITER_KWARGS,
+        STATIC_KWARGS=None,
+        n_proc=1,
+        show_progress_bars=True,
+        ignore_errors=False,
+        log_path=None,
+        debug_mode=False,
 ):
     """
     Applies the passed function to all elements of the passed iterables.

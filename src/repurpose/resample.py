@@ -292,17 +292,3 @@ def hamming_window(radius, distances):
 
     return weights
 
-
-
-if __name__ == '__main__':
-    from smecv_grid.grid import SMECV_Grid_v052
-    from pygeogrids.netcdf import load_grid
-    warp = load_grid("/home/wpreimes/Downloads/warp_dgg.nc")
-    qdeg = SMECV_Grid_v052(None)
-
-    data = warp.activegpis.astype(float)
-    out, mask = resample_to_grid_only_valid_return(
-        {'warp_gpi': data}, warp.activearrlon, warp.activearrlat,
-                     qdeg.activearrlon, qdeg.activearrlat,
-                     min_neighbours=1, search_rad=18000, neighbours=8,
-                     methods='nn', weight_funcs=None, fill_values=np.nan)
