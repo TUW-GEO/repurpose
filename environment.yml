@@ -17,6 +17,7 @@ dependencies:
   - pip
   # optional, for docs and testing
   - nb_conda
+  - matplotlib
   - ipykernel
   - pip:
     - pygeogrids
