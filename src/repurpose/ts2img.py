@@ -130,6 +130,9 @@ class Ts2Img:
         afterwards. Then convert time series time stamps to deltas (>0) from
         the image time stamps and store them in a new image variable
         'timedelta_seconds'.
+    loglevel: str, optional (default: 'WARNING')
+        Logging level.
+        Must be one of 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'.
     """
 
     # Some variables are generated internally and cannot be used.
@@ -140,7 +143,7 @@ class Ts2Img:
 
     def __init__(self, ts_reader, img_grid, timestamps,
                  variables=None, read_function='read',
-                 max_dist=18000, time_collocation=True):
+                 max_dist=18000, time_collocation=True, loglevel="WARNING"):
 
         self.ts_reader = ts_reader
         self.img_grid: CellGrid = Regular3dimImageStack._eval_grid(img_grid)
@@ -155,6 +158,7 @@ class Ts2Img:
         self.max_dist = max_dist
         self.time_collocation = time_collocation
 
+        self.loglevel = loglevel
         self.stack = None
 
 
@@ -191,7 +195,7 @@ class Ts2Img:
             logging.error(f"Error reading Time series data at "
                           f"lon: {lon}, lat: {lat}: {e}")
             return None
-        if self.variables is not None:
+        if (self.variables is not None) and (ts is not None):
             ts = ts.rename(columns=self.variables)[self.variables.values()]
         return ts
 
@@ -201,8 +205,8 @@ class Ts2Img:
         See: self.calc
         """
         self.timestamps = timestamps
-        logging.debug(f"Processing chunk from {timestamps[0]} to "
-                      f"{timestamps[-1]}")
+        logging.info(f"Processing chunk from {timestamps[0]} to "
+                     f"{timestamps[-1]}")
 
         # Transfer time series to images, parallel for cells
         STATIC_KWARGS = {'converter': self}
@@ -218,7 +222,7 @@ class Ts2Img:
         stack = parallel_process_async(
             _convert, ITER_KWARGS, STATIC_KWARGS, n_proc=n_proc,
             show_progress_bars=True, log_path=log_path,
-            debug_mode=False)
+            verbose=False, ignore_errors=True)
 
         stack = xr.combine_by_coords(stack)
 
@@ -445,5 +449,7 @@ class Ts2Img:
                            'encoding': encoding},
             n_proc=n_proc,
             show_progress_bars=True,
+            verbose=False,
+            loglevel=self.loglevel,
             ignore_errors=True,
         )

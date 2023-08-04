@@ -53,7 +53,8 @@ def parallel_process_async(
         show_progress_bars=True,
         ignore_errors=False,
         log_path=None,
-        debug_mode=False,
+        loglevel="WARNING",
+        verbose=False,
 ):
     """
     Applies the passed function to all elements of the passed iterables.
@@ -84,8 +85,11 @@ def parallel_process_async(
         Show how many iterables were processed already.
     log_path: str, optional (default: None)
         If provided, a log file is created in the passed directory.
-    debug_mode: float, optional (default: False)
-        Print logging messages to stdout, useful for debugging.
+    loglevel: str, optional (default: "WARNING")
+        Log level to use for logging. Must be one of
+        ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"].
+    verbose: float, optional (default: False)
+        Print all logging messages to stdout, useful for debugging.
 
     Returns
     -------
@@ -101,7 +105,7 @@ def parallel_process_async(
     if STATIC_KWARGS is None:
         STATIC_KWARGS = dict()
 
-    if debug_mode:
+    if verbose:
         logger.setLevel('DEBUG')
         logger.addHandler(streamHandler)
 
@@ -116,7 +120,7 @@ def parallel_process_async(
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
         logging.basicConfig(
             filename=log_file,
-            level=logging.INFO,
+            level=loglevel.upper(),
             format="%(levelname)s %(asctime)s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
@@ -187,7 +191,7 @@ def parallel_process_async(
     if pbar is not None:
         pbar.close()
 
-    if debug_mode:
+    if verbose:
         logger.handlers.clear()
 
     handlers = logger.handlers[:]

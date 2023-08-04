@@ -1,5 +1,3 @@
-import logging
-import os
 import numpy as np
 import pandas as pd
 import time
@@ -31,21 +29,7 @@ def test_apply_to_elements():
     static_kwargs = {'p': 2}
     with tempfile.TemporaryDirectory() as log_path:
         res = parallel_process_async(
-            func, iter_kwargs, static_kwargs, n_proc=2,
-            show_progress_bars=False, debug_mode=True,
+            func, iter_kwargs, static_kwargs, n_proc=1,
+            show_progress_bars=False, verbose=False, loglevel="DEBUG",
             ignore_errors=True, log_path=log_path)
         assert sorted(res) == [1, 4, 9, 16]
-
-        # no log files created with pytest, probably because pytest logs
-        # everything already. Keeping this for possible later inclusion
-
-        # logfile = os.listdir(log_path)
-        # assert len(logfile) == 1
-        # logfile = logfile[0]
-        # with open(os.path.join(log_path, logfile), 'r') as file:
-        #     cont = file.read().replace('\n', '')
-        #     assert "x=2, p=2" in cont
-        #     assert "INFO" in cont
-
-if __name__ == '__main__':
-    test_apply_to_elements()
