@@ -8,7 +8,7 @@ import os
 from nbconvert.preprocessors import ExecutePreprocessor
 import nbformat
 import pytest
-from repurpose.utils import rootdir
+from repurpose.process import rootdir
 
 
 examples_path = os.path.join(rootdir(), 'docs', 'examples')

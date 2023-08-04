@@ -1,4 +1,4 @@
-from repurpose.utils import parallel_process_async, idx_chunks
+from repurpose.process import parallel_process_async, idx_chunks
 import logging
 import numpy as np
 import pandas as pd

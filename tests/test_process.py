@@ -4,7 +4,7 @@ import time
 import tempfile
 import logging
 
-from repurpose.utils import parallel_process_async, idx_chunks
+from repurpose.process import parallel_process_async, idx_chunks
 
 def test_index_chunks():
     timestamps = pd.date_range('2020-07-01', '2020-07-09', freq='1D')
