@@ -1,19 +1,31 @@
-# List of conda and pip packages that are should be install when developing the packages
-# To create the full conda environment: conda env create -f environment.yml
+# List of conda and pip packages that are should be installed when
+# developing the packages
+# To create the full conda environment (any supported python version):
+#   mamba create -n repurpose python=3.10
+#   mamba env update -f environment.yml -n repurpose
 name: repurpose
 channels:
   - defaults
   - conda-forge
 dependencies:
   - numpy
+  - pandas
   - pyresample
-  - netcdf4!=1.6.2
+  - netcdf4
+  - pyproj
+  - xarray
   - pip
+  # optional, for docs and testing
+  - nb_conda
+  - matplotlib
+  - ipykernel
   - pip:
     - pygeogrids
-    - pynetcf
+    - pynetcf>=0.5.0
     - more_itertools
     - sphinx_rtd_theme
+    - smecv_grid
+    - tqdm
     - yapf
     - pytest
     - pytest-cov

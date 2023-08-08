@@ -149,7 +149,7 @@ class Img2Ts(object):
         if not hasattr(self.imgin, 'grid'):
             self.input_grid = input_grid
         else:
-            self.input_grid = self.imgin.grid
+            self.input_grid = self.imgin.glob_grid
 
         if self.input_grid is None and target_grid is None:
             raise ValueError("Either the input dataset has to have a grid, "
@@ -459,21 +459,3 @@ class Img2Ts(object):
             datetimestack = np.array(datetimes)
             yield (img_stack_dict, bulkstart, self.currentdate, datetimestack,
                    jd_stack)
-
-
-if __name__ == '__main__':
-    import rsdata.GLDAS_NOAH.interface as GLDAS
-    import rsdata.root_path as root
-
-    # outputpath = os.path.join(root.d, 'GIO GL', 'Evolution', 'SWI_NRT_validation', 'GLDAS',
-    #                           'raw')
-    outputpath = os.path.join(root.d, 'img2ts_test')
-    start = datetime(2014, 2, 5)
-    end = datetime(2014, 4, 21)
-
-    img2ts = Img2Ts(GLDAS.GLDAS025Img(parameter=['086_L1', '086_L2',
-                                                 '086_L3', '086_L4', '131',
-                                                 '132', '138', '085_L1',
-                                                 '065', '057']),
-                    outputpath, start, end, imgbuffer=15)
-    img2ts.calc()

@@ -1,96 +1,226 @@
-# Copyright (c) 2015,Vienna University of Technology,
-# Department of Geodesy and Geoinformation
-# All rights reserved.
-
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#   * Redistributions of source code must retain the above copyright
-#     notice, this list of conditions and the following disclaimer.
-#    * Redistributions in binary form must reproduce the above copyright
-#      notice, this list of conditions and the following disclaimer in the
-#      documentation and/or other materials provided with the distribution.
-#    * Neither the name of the Vienna University of Technology, Department of
-#      Geodesy and Geoinformation nor the names of its contributors may be
-#      used to endorse or promote products derived from this software without
-#      specific prior written permission.
-
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL VIENNA UNIVERSITY OF TECHNOLOGY,
-# DEPARTMENT OF GEODESY AND GEOINFORMATION BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 '''
-Module for testing time series to image conversion
+Integration tests for ts2img module
 '''
+import tempfile
 import pandas as pd
 import numpy as np
-import numpy.testing as nptest
+import pytest
+import xarray as xr
+import os
 
-from repurpose.ts2img import Ts2Img, agg_tsmonthly
-# make a mock read and write class for basic testing of the program logic
+from repurpose.ts2img import Ts2Img
+from datetime import timedelta
+from pygeogrids.grids import genreg_grid, CellGrid
+from smecv_grid.grid import SMECV_Grid_v052
+
+bbox_eu = (-10, 33, 40, 64)
 
 
-class MockGrid(object):
+class DummyReader:
+    def __init__(self, timestamps, bbox=bbox_eu, perc_nan=0.4, dropna=False,
+                 dates_force_empty=None, drop_time=False):
+        self.index = timestamps
+        self.grid: CellGrid = SMECV_Grid_v052().subgrid_from_bbox(*bbox)
+        self.perc_nan = perc_nan
+        self.dropna = dropna
+        self.dates_force_empty = dates_force_empty
+        self.drop_time = drop_time
 
-    """
-    FakeGrid
-    """
-
-    def __init__(self):
-        pass
-
-    def grid_points(self):
+    def read(self, lon: float, lat: float):
         """
-        return 10 grid points
+        - random missing indices
+        - random time stamps
         """
-        return list(range(10)), None, None, None
+        gpi, dist = self.grid.find_nearest_gpi(lon, lat)
+        if dist > 25000:
+            return None
+        rng = np.random.default_rng(seed=int(lon * 100 + lat * 100))
+
+        index = self.index.to_pydatetime()
+        i_miss = []
+        for d in self.dates_force_empty:
+            i_miss += np.where(index == d)[0].tolist()
+
+        timeoffset = [timedelta(seconds=int(s)) for s in
+                      rng.choice(np.arange(0, 6 * 60 * 60), len(index))]
+        d1 = rng.random(len(index))
+        d2 = rng.integers(0, 100, len(index))
+        if self.perc_nan:
+            idx = rng.choice(np.arange(len(index)),
+                             int(len(index) * self.perc_nan),
+                             replace=False)
+            d1[idx] = np.nan
+            idx = rng.choice(np.arange(len(index)),
+                             int(len(index) * self.perc_nan),
+                             replace=False)
+            d2[idx] = -9999
+        data = {'var0': d1, 'var2': d2}
+        if not self.drop_time:
+            index = index + timeoffset
+
+        df = pd.DataFrame(index=index, data=data).sort_index()
+
+        df.iloc[i_miss, :] = np.nan
+
+        if self.dropna:
+            df = df.dropna(how='any')
+        else:
+            df = df.dropna(how='all')
+
+        return df
 
 
-class MockReader(object):
+def test_ts2img_time_collocation_integration():
+    timestamps_image = pd.date_range('2020-07-01', '2020-07-31', freq='6H')
+    timestamps_ts = timestamps_image[20:50]
 
-    """
-    Fake Dataset
-    """
+    # 2020070412 and 2020070418 are missing:
+    dates_force_empty = [timestamps_ts[14], timestamps_ts[15]]
+    reader = DummyReader(timestamps_ts, dropna=False,
+                         dates_force_empty=dates_force_empty,
+                         perc_nan=0.4)
+    # Grid Italy
+    img_grid = genreg_grid(0.5, 0.5, 40, 45, 10, 14, origin="bottom")
 
-    def __init__(self, grid):
-        self.grid = grid
+    _ = reader.read(15, 45)
+    # second and last time stamp is missing for testing
+    converter = Ts2Img(reader, img_grid, timestamps=timestamps_image,
+                       max_dist=25000, time_collocation=True,
+                       variables={'var0': 'var1', 'var2': 'var2'})
 
-    def read_ts(self, gpi):
-        rng = pd.date_range('1-1-2001', periods=72, freq='D')
-        return pd.DataFrame({'data': np.arange(72) + gpi}, index=rng)
+    with tempfile.TemporaryDirectory() as path_out:
+        with pytest.warns(UserWarning):  # expected warning about empty stack
+            converter.calc(
+                path_out, format_out='slice',
+                fn_template="test_{datetime}.nc", drop_empty=True,
+                encoding={'var1': {'dtype': 'int64', 'scale_factor': 0.0000001,
+                                   '_FillValue': -9999}, },
+                var_attrs={'var1': {'long_name': 'test_var1', 'units': 'm'}},
+                glob_attrs={'test': 'test'}, var_fillvalues={'var2': -9999},
+                var_dtypes={'var2': 'int32'}, n_proc=1)
+
+        assert len(os.listdir(os.path.join(path_out, '2020'))) == 28
+        assert os.path.isfile(
+            os.path.join(path_out, '2020', 'test_20200708060000.nc'))
+        assert os.path.isfile(
+            os.path.join(path_out, '2020', 'test_20200712120000.nc'))
+        # missing because before the image time stamps
+        assert not os.path.isfile(
+            os.path.join(path_out, '2020', 'test_202007011200.nc'))
+        # missing because forced to be empty
+        assert not os.path.isfile(
+            os.path.join(path_out, '2020', 'test_202007091200.nc'))
+        assert not os.path.isfile(
+            os.path.join(path_out, '2020', 'test_202007091800.nc'))
+
+        ds = xr.open_dataset(
+            os.path.join(path_out, '2020', 'test_20200708060000.nc'))
+        assert list(ds.dims) == ['lon', 'lat', 'time']
+        assert ds.data_vars.keys() == {'timedelta_seconds', 'var1', 'var2'}
+
+        # var1 was stored as int, but is float64 after decoding
+        assert ds['var1'].values.dtype == 'float64'
+        assert ds['var1'].values.shape == (1, 10, 8)
+        assert ds['var1'].encoding['scale_factor'] == 0.0000001
+        assert 1 > np.nanmin(ds['var1'].values) > 0
+        assert np.isnan(ds['var1'].values[-1, -1, -1])
+        np.testing.assert_almost_equal(ds['var1'].values[0, 0, 0], 0.7620138,
+                                       5)
+
+        t = pd.to_datetime(ds.time.values[0]).to_pydatetime()
+        t = t + timedelta(seconds=int(
+            ds.sel(lon=11.25, lat=44.75)['timedelta_seconds'].values[0]))
+        val_ts = reader.read(11.25, 44.75).loc[t]
+
+        val = ds['var1'].sel(lon=11.25, lat=44.75).values[0]
+        np.testing.assert_almost_equal(val, val_ts['var0'], decimal=5)
+
+        assert ds['var2'].values.dtype == 'int32'
+        assert ds['var2'].values.shape == (1, 10, 8)
+        assert 'scale_factor' not in ds['var2'].encoding
+        assert np.nanmin(ds['var2'].values) == -9999
+        assert np.nanmax(ds['var2'].values) < 100
+        val = ds['var2'].sel(lon=11.25, lat=44.75).values[0]
+        assert val == int(val_ts['var2'])
+
+        ds.close()   # needed on Windows!
 
 
-class MockWriter(object):
 
-    """
-    FakeWriter
-    """
+def test_ts2img_no_collocation_integration():
+    timestamps_image = pd.date_range('2020-07-01', '2020-07-10', freq='1D')
+    timestamps_ts = timestamps_image[1:]
 
-    def write_ts(self, gpis, ts):
-        assert list(gpis) == list(range(10))
-        nptest.assert_almost_equal(ts['data'], np.array([[30, 58], [31, 59],
-                                                         [32, 60], [33, 61],
-                                                         [34, 62], [35, 63],
-                                                         [36, 64], [37, 65],
-                                                         [38, 66], [39, 67]]))
+    # 20200701 and 20200704 are missing:
+    dates_force_empty = [timestamps_ts[2]]
 
+    reader = DummyReader(timestamps_ts, dropna=False,
+                         dates_force_empty=dates_force_empty,
+                         perc_nan=0.4, drop_time=True)
+    # Grid Italy
+    img_grid = genreg_grid(0.25, 0.25, 40, 45, 10, 14,
+                           origin="bottom")
 
-def test_ts2img_mock_datasets():
-    """
-    test the basic programatic logic of the ts2img
-    class by using mock datasets that only pass a pandas dataframe
-    through
-    """
+    _ = reader.read(15, 45)
+    # second and last time stamp is missing for testing
+    converter = Ts2Img(reader, img_grid, timestamps=timestamps_image,
+                       max_dist=0, time_collocation=False)
 
-    grid = MockGrid()
-    inds = MockReader(grid)
-    outds = MockWriter()
-    converter = Ts2Img(inds, outds)
-    converter.calc()
+    with tempfile.TemporaryDirectory() as path_out:
+        converter.calc(path_out, format_out='slice',
+                       fn_template="test_{datetime}.nc", drop_empty=False,
+                       encoding={'var2': {'dtype': 'int16'}, },
+                       var_attrs={
+                           'var2': {'long_name': 'test_var2', 'units': 'm'}},
+                       glob_attrs={'test': 'test2'},
+                       var_fillvalues={'var2': -9999},
+                       var_dtypes={'var2': 'int32'}, n_proc=1)
+
+        # all 10 files must exist, first two emtpy
+        assert len(os.listdir(os.path.join(path_out, '2020'))) == 10
+        # check empty file
+        ds = xr.open_dataset(
+            os.path.join(path_out, '2020', 'test_20200701000000.nc'))
+        ds2 = xr.open_dataset(
+            os.path.join(path_out, '2020', 'test_20200704000000.nc'))
+        for var in ds.data_vars:
+            assert np.all(np.nan_to_num(ds[var].values, nan=-1) ==
+                          np.nan_to_num(ds2[var].values, nan=-1))
+
+        ds2.close()  # needed on windows!
+        assert list(ds.dims) == ['lon', 'lat', 'time']
+        assert 'timedelta_seconds' not in ds.data_vars.keys()
+        assert np.all(np.isnan(ds['var0'].values))
+        assert np.all(ds['var2'].values == -9999)
+        assert ds.data_vars.keys() == {'var0', 'var2'}
+
+        ds = xr.open_dataset(
+            os.path.join(path_out, '2020', 'test_20200702000000.nc'))
+        assert not np.all(np.isnan(ds['var0'].values))
+        assert not np.all(ds['var2'].values == -9999)
+        # var1 was stored as int, but is float64 after decoding
+        assert ds['var0'].values.dtype == 'float32'
+        assert ds['var0'].values.shape == (1, 20, 16)
+        assert np.isnan(ds['var0'].encoding['_FillValue'])
+        assert 'scale_factor' not in ds['var0'].encoding
+        assert 1 > np.nanmin(ds['var0'].values) > 0
+        assert np.isnan(ds['var0'].values[-1, -1, -1])
+        np.testing.assert_almost_equal(ds['var0'].values[0, 0, 0], 0.28230414,
+                                       5)
+
+        t = pd.to_datetime(ds.time.values[0]).to_pydatetime()
+        val_ts = reader.read(11.125, 44.875).loc[t]
+
+        val = ds['var0'].sel(lon=11.125, lat=44.875).values[0]
+        assert np.isnan(val) == np.isnan(val_ts['var0']) == True
+
+        assert ds['var2'].values.dtype == ds['var2'].encoding[
+            'dtype'] == 'int16'
+        assert ds['var2'].values.shape == (1, 20, 16)
+        assert 'scale_factor' not in ds['var2'].encoding
+        assert np.nanmin(ds['var2'].values) == -9999
+        assert np.nanmax(ds['var2'].values) < 100
+        val = ds['var2'].sel(lon=11.125, lat=44.875).values[0]
+        assert val == int(val_ts['var2'])
+
+        ds.close()   # needed on Windows!

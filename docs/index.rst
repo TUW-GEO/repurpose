@@ -8,8 +8,8 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   Time Series to Images <ts2img>
    Spatial Resampling <resample>
+   Time Series to Images <examples/ts2img>
    License <license>
    Authors <authors>
    Module Reference <api/modules>
