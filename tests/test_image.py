@@ -148,7 +148,7 @@ class TestRegularImageStackWithCollocation(unittest.TestCase):
             warnings.simplefilter("ignore",
                                   category=pd.errors.PerformanceWarning)
             ts = pd.DataFrame(
-                index=self.img_timestamps + self.timeoffsets,
+                index=pd.DatetimeIndex(self.img_timestamps + self.timeoffsets),
                 data={'var1': np.arange(1.1, 6.1).astype('float32'),
                       'var2': np.arange(11, 16).astype('int8')}
             )
