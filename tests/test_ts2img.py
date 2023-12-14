@@ -71,6 +71,19 @@ class DummyReader:
 
 
 def test_ts2img_time_collocation_integration():
+    def preprocess_func(df, mult=2):
+        # This dummy function just adds a new column to the dataframe after
+        # reading
+        df['var3'] = df['var1'] * mult
+        return df
+
+    def postprocess_func(stack, vars, fillvalue=0):
+        # This dummy function just fills nans with an actual value before
+        # writing the stack
+        for var in vars:
+            stack[var].values = np.nan_to_num(stack[var].values, nan=fillvalue)
+        return stack
+
     timestamps_image = pd.date_range('2020-07-01', '2020-07-31', freq='6H')
     timestamps_ts = timestamps_image[20:50]
 
@@ -93,6 +106,8 @@ def test_ts2img_time_collocation_integration():
             converter.calc(
                 path_out, format_out='slice',
                 fn_template="test_{datetime}.nc", drop_empty=True,
+                preprocess=preprocess_func, preprocess_kwargs={'mult': 2},
+                postprocess=postprocess_func, postprocess_kwargs={'vars': ('var2',)},
                 encoding={'var1': {'dtype': 'int64', 'scale_factor': 0.0000001,
                                    '_FillValue': -9999}, },
                 var_attrs={'var1': {'long_name': 'test_var1', 'units': 'm'}},
@@ -116,16 +131,21 @@ def test_ts2img_time_collocation_integration():
         ds = xr.open_dataset(
             os.path.join(path_out, '2020', 'test_20200708060000.nc'))
         assert list(ds.dims) == ['lon', 'lat', 'time']
-        assert ds.data_vars.keys() == {'timedelta_seconds', 'var1', 'var2'}
+        assert ds.data_vars.keys() == {'timedelta_seconds', 'var1', 'var2', 'var3'}
 
         # var1 was stored as int, but is float64 after decoding
         assert ds['var1'].values.dtype == 'float64'
         assert ds['var1'].values.shape == (1, 10, 8)
         assert ds['var1'].encoding['scale_factor'] == 0.0000001
+        # during preprocessing var3 was added as var1 * 2
+        np.testing.assert_almost_equal(ds['var3'].values,
+                                       ds['var1'].values * 2)
         assert 1 > np.nanmin(ds['var1'].values) > 0
         assert np.isnan(ds['var1'].values[-1, -1, -1])
         np.testing.assert_almost_equal(ds['var1'].values[0, 0, 0], 0.7620138,
                                        5)
+        # check if the postprocess function was applied
+        assert np.count_nonzero(np.isnan(ds['var2'].values)) == 0
 
         t = pd.to_datetime(ds.time.values[0]).to_pydatetime()
         t = t + timedelta(seconds=int(
@@ -148,6 +168,19 @@ def test_ts2img_time_collocation_integration():
 
 
 def test_ts2img_no_collocation_integration():
+    def preprocess_func(df, **kwargs):
+        df.replace(-9999, np.nan, inplace=True)
+        df = df.reindex(pd.date_range('2020-07-01', '2020-07-10', freq='1D'))
+        df = df.resample('1D').mean()
+        df['var3'] = np.nan
+        df.loc['2020-07-10', 'var3'] = 1
+        df.loc['2020-07-09', 'var3'] = 2
+        return df
+
+    def postprocess_func(stack, **kwargs):
+        stack = stack.assign(var4=lambda x: x['var3'] ** 2)
+        return stack
+
     timestamps_image = pd.date_range('2020-07-01', '2020-07-10', freq='1D')
     timestamps_ts = timestamps_image[1:]
 
@@ -168,6 +201,7 @@ def test_ts2img_no_collocation_integration():
 
     with tempfile.TemporaryDirectory() as path_out:
         converter.calc(path_out, format_out='slice',
+                       preprocess=preprocess_func, postprocess=postprocess_func,
                        fn_template="test_{datetime}.nc", drop_empty=False,
                        encoding={'var2': {'dtype': 'int16'}, },
                        var_attrs={
@@ -183,16 +217,30 @@ def test_ts2img_no_collocation_integration():
             os.path.join(path_out, '2020', 'test_20200701000000.nc'))
         ds2 = xr.open_dataset(
             os.path.join(path_out, '2020', 'test_20200704000000.nc'))
-        for var in ds.data_vars:
+        ds3 = xr.open_dataset(
+            os.path.join(path_out, '2020', 'test_20200710000000.nc'))
+        ds4 = xr.open_dataset(
+            os.path.join(path_out, '2020', 'test_20200709000000.nc'))
+        assert np.nanmax(ds3['var3'].values) == 1
+        assert np.nanmax(ds4['var3'].values) == 2
+        for var in ['var0', 'var2']:
             assert np.all(np.nan_to_num(ds[var].values, nan=-1) ==
                           np.nan_to_num(ds2[var].values, nan=-1))
+
+        # check if the postprocessing function was applied
+        assert np.nanmax(ds3['var4'].values) == 1
+        assert np.nanmax(ds4['var4'].values) == 4
+        assert 4 in np.unique(ds4['var4'].values)
+        assert 1 in np.unique(ds3['var4'].values)
+        assert len(np.unique(ds3['var4'].values)) == \
+               len(np.unique(ds4['var4'].values)) == 2
 
         ds2.close()  # needed on windows!
         assert list(ds.dims) == ['lon', 'lat', 'time']
         assert 'timedelta_seconds' not in ds.data_vars.keys()
         assert np.all(np.isnan(ds['var0'].values))
         assert np.all(ds['var2'].values == -9999)
-        assert ds.data_vars.keys() == {'var0', 'var2'}
+        assert ds.data_vars.keys() == {'var0', 'var2', 'var3', 'var4'}
 
         ds = xr.open_dataset(
             os.path.join(path_out, '2020', 'test_20200702000000.nc'))
@@ -224,3 +272,4 @@ def test_ts2img_no_collocation_integration():
         assert val == int(val_ts['var2'])
 
         ds.close()   # needed on Windows!
+
