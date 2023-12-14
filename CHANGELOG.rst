@@ -7,6 +7,14 @@ Unreleased changes in master branch
 
 -
 
+Version 0.10
+============
+
+- Ts2Img module was rebuilt. Allows conversion of time series with NN lookup.
+- Added example notebook for converting ASCAT time series into regularly gridded images.
+- Added a simple parallelization framework, with logging and error handling.
+- Added the option to pass custom pre- and post-processing functions to ts2img.
+
 Version 0.9
 ===========
 

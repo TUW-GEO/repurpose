@@ -21,8 +21,6 @@ TODOs:
 - add possibility to use resampling methods other than nearest neighbour
     - integrate repurpose.resample module
     - allows weighting functions etc.
-- add preprocessing and postprocessing keywords to change the input ts and 
-    output stack before writing
 - similar to resample, use multiple neighbours when available for image pixel
 - further harmonisation with pynetcf interface
 - time ranges for images instead of time stamps
@@ -32,7 +30,9 @@ def _convert(converter: 'Ts2Img',
              writer: Regular3dimImageStack,
              img_gpis: np.ndarray,
              lons: np.ndarray,
-             lats: np.ndarray) -> xr.Dataset:
+             lats: np.ndarray,
+             preprocess_func=None,
+             preprocess_kwargs=None) -> xr.Dataset:
     """
     Wrapper to allow parallelization of the conversion process.
     This is kept outside the Ts2Img class for parallelization.
@@ -41,6 +41,9 @@ def _convert(converter: 'Ts2Img',
         ts = converter._read_nn(lon, lat)
         if ts is None:
             continue
+        if preprocess_func is not None:
+            preprocess_kwargs = preprocess_kwargs or {}
+            ts = preprocess_func(ts, **preprocess_kwargs)
         if np.any(np.isin(ts.columns, Ts2Img._protected_vars)):
             raise ValueError(
                 f"Time series contains protected variables. "
@@ -199,7 +202,8 @@ class Ts2Img:
             ts = ts.rename(columns=self.variables)[self.variables.values()]
         return ts
 
-    def _calc_chunk(self, timestamps, log_path=None, n_proc=1):
+    def _calc_chunk(self, timestamps, preprocess_func=None, preprocess_kwargs=None,
+                    log_path=None, n_proc=1):
         """
         Create image stack from time series for the passed timestamps.
         See: self.calc
@@ -209,7 +213,11 @@ class Ts2Img:
                      f"{timestamps[-1]}")
 
         # Transfer time series to images, parallel for cells
-        STATIC_KWARGS = {'converter': self}
+        STATIC_KWARGS = {
+            'converter': self,
+            'preprocess_func': preprocess_func,
+            'preprocess_kwargs': preprocess_kwargs,
+        }
         ITER_KWARGS = {'writer': [], 'img_gpis': [], 'lons': [], 'lats': []}
 
         for cell in np.unique(self.img_grid.activearrcell):
@@ -232,10 +240,12 @@ class Ts2Img:
                                    lon=stack['lon']))
         return stack
 
-    def calc(self, path_out, format_out='slice',
-             fn_template="{datetime}.nc", drop_empty=False, encoding=None,
-             zlib=True, glob_attrs=None, var_attrs=None,
-             var_fillvalues=None, var_dtypes=None, img_buffer=100, n_proc=1):
+    def calc(self, path_out, format_out='slice', preprocess=None,
+             preprocess_kwargs=None, postprocess=None, postprocess_kwargs=None,
+             fn_template="{datetime}.nc",
+             drop_empty=False, encoding=None, zlib=True, glob_attrs=None,
+             var_attrs=None, var_fillvalues=None, var_dtypes=None,
+             img_buffer=100, n_proc=1):
         """
         Perform conversion of all time series to images. This will first split
         timestamps into processing chunks (img_buffer) and then - for each
@@ -253,6 +263,43 @@ class Ts2Img:
             - stack: write all time steps into one file. In this case if there
                 is a {datetime} placeholder in the fn_template, then the time
                 range is inserted.
+        preprocess: callable, optional (default: None)
+            Function that is applied to each time series before converting it.
+            The first argument is the data frame that the reader returns.
+            Additional keyword arguments can be passed via `preprocess_kwargs`.
+            The function must return a data frame of the same form as the input
+            data, i.e. with a datetime index and at least one column of data.
+            Note: As an alternative to a preprocessing function, consider
+            applying an adapter to the reader class. Adapters also perform
+            preprocessing, see `pytesmo.validation_framework.adapters`
+            A simple example for a preprocessing function to compute the sum:
+            ```
+            def preprocess_add(df: pd.DataFrame, **preprocess_kwargs) \
+                    -> pd.DataFrame:
+                df['var3'] = df['var1'] + df['var2']
+                return df
+            ```
+        preprocess_kwargs: dict, optional (default: None)
+            Keyword arguments for the preprocess function. If None are given,
+            then the preprocessing function is is called with only the input
+            data frame and no additional arguments (see example above).
+        postprocess: Callable, optional (default: None)
+            Function that is applied to the image stack after loading the data
+            and before writing it to disk. The function must take xarray
+            Dataset as the first argument and return an xarray Dataset of the
+            same form as the input data.
+            A simple example for a preprocessing function to add a new variable
+            from the sum of two existing variables:
+            ```
+            def preprocess_add(stack: xr.Dataset, **postprocess_kwargs) \
+                    -> xr.Dataset
+                stack = stack.assign(var3=lambda x: x['var0'] + x['var2'])
+                return stack
+            ```
+        postprocess_kwargs: dict, optional (default: None)
+            Keyword arguments for the postprocess function. If None are given,
+            then the postprocess function is called with only the input
+            image stack and no additional arguments (see example above).
         fn_template: str, optional (default: "{datetime}.nc")
             Template for the output image file names.
             If format_out is 'slice', then a placeholder {datetime} must be
@@ -298,6 +345,7 @@ class Ts2Img:
         img_buffer: int, optional (default: 100)
             Size of the stack before writing to disk. Larger stacks need
             more memory but will lead to faster conversion.
+            Passing -1 means that the whole stack loaded into memory at once.
         n_proc: int, optional (default: 1)
             Number of processes to use for parallel processing. We parallelize
             by 5 deg. grid cell.
@@ -315,7 +363,9 @@ class Ts2Img:
         dt_index_chunks = list(idx_chunks(self.timestamps, int(img_buffer)))
 
         for timestamps in dt_index_chunks:
-            self.stack = self._calc_chunk(timestamps, log_path, n_proc)
+            self.stack = self._calc_chunk(timestamps,
+                                          preprocess, preprocess_kwargs,
+                                          log_path, n_proc)
 
             if drop_empty:
                 vars = [var for var in self.stack.data_vars if var not in
@@ -330,6 +380,10 @@ class Ts2Img:
                         idx_empty.append(i)
 
                 self.stack = self.stack.drop_isel(time=idx_empty)
+
+            if postprocess is not None:
+                postprocess_kwargs = postprocess_kwargs or {}
+                self.stack = postprocess(self.stack, **postprocess_kwargs)
 
             if var_fillvalues is not None:
                 for var, fillvalue in var_fillvalues.items():

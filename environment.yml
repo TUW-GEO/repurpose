@@ -16,16 +16,18 @@ dependencies:
   - xarray
   - pip
   # optional, for docs and testing
-  - nb_conda
+  #- nb_conda
   - matplotlib
   - ipykernel
   - pip:
     - pygeogrids
     - pynetcf>=0.5.0
     - more_itertools
-    - sphinx_rtd_theme
     - smecv_grid
     - tqdm
+    # Optional, for documentation and testing
+    - nbconvert
+    - sphinx_rtd_theme
     - yapf
     - pytest
     - pytest-cov

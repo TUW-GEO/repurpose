@@ -52,9 +52,11 @@ def parallel_process_async(
         n_proc=1,
         show_progress_bars=True,
         ignore_errors=False,
+        activate_logging=True,
         log_path=None,
         loglevel="WARNING",
         verbose=False,
+        progress_bar_label="Processed"
 ):
     """
     Applies the passed function to all elements of the passed iterables.
@@ -83,6 +85,11 @@ def parallel_process_async(
         this case the return values are kept in order.
     show_progress_bars: bool, optional (default: True)
         Show how many iterables were processed already.
+    ignore_errors: bool, optional (default: False)
+        If True, exceptions are caught and logged. If False, exceptions are
+        raised.
+    activate_logging: bool, optional (default: True)
+        If False, no logging is done at all (neither to file nor to stdout).
     log_path: str, optional (default: None)
         If provided, a log file is created in the passed directory.
     loglevel: str, optional (default: "WARNING")
@@ -90,40 +97,46 @@ def parallel_process_async(
         ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"].
     verbose: float, optional (default: False)
         Print all logging messages to stdout, useful for debugging.
+    progress_bar_label: str, optional (default: "Processed")
+        Label to use for the progress bar.
 
     Returns
     -------
     results: list
         List of return values from each function call
     """
-    logger = logging.getLogger()
-    streamHandler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    streamHandler.setFormatter(formatter)
+    if activate_logging:
+        logger = logging.getLogger()
+        streamHandler = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        streamHandler.setFormatter(formatter)
 
-    if STATIC_KWARGS is None:
-        STATIC_KWARGS = dict()
+        if STATIC_KWARGS is None:
+            STATIC_KWARGS = dict()
 
-    if verbose:
-        logger.setLevel('DEBUG')
-        logger.addHandler(streamHandler)
+        if verbose:
+            logger.setLevel('DEBUG')
+            logger.addHandler(streamHandler)
 
-    if log_path is not None:
-        log_file = os.path.join(
-            log_path,
-            f"{FUNC.__name__}_{datetime.now().strftime('%Y%m%d%H%M')}.log")
+        if log_path is not None:
+            log_file = os.path.join(
+                log_path,
+                f"{FUNC.__name__}_{datetime.now().strftime('%Y%m%d%H%M')}.log")
+        else:
+            log_file = None
+
+
+        if log_file:
+            os.makedirs(os.path.dirname(log_file), exist_ok=True)
+            logging.basicConfig(
+                filename=log_file,
+                level=loglevel.upper(),
+                format="%(levelname)s %(asctime)s %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S",
+            )
     else:
-        log_file = None
-
-    if log_file:
-        os.makedirs(os.path.dirname(log_file), exist_ok=True)
-        logging.basicConfig(
-            filename=log_file,
-            level=loglevel.upper(),
-            format="%(levelname)s %(asctime)s %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
+        logger = None
 
     n = np.array([len(v) for k, v in ITER_KWARGS.items()])
     if len(n) == 0:
@@ -150,7 +163,7 @@ def parallel_process_async(
         process_kwargs.append(kws)
 
     if show_progress_bars:
-        pbar = tqdm(total=len(process_kwargs), desc=f"Processed")
+        pbar = tqdm(total=len(process_kwargs), desc=progress_bar_label)
     else:
         pbar = None
 
@@ -163,7 +176,8 @@ def parallel_process_async(
             pbar.update()
 
     def error(e) -> None:
-        logging.error(e)
+        if logger is not None:
+            logging.error(e)
         if not ignore_errors:
             raise e
         if pbar is not None:
@@ -191,12 +205,13 @@ def parallel_process_async(
     if pbar is not None:
         pbar.close()
 
-    if verbose:
-        logger.handlers.clear()
+    if logger is not None:
+        if verbose:
+            logger.handlers.clear()
 
-    handlers = logger.handlers[:]
-    for handler in handlers:
-        logger.removeHandler(handler)
-        handler.close()
+        handlers = logger.handlers[:]
+        for handler in handlers:
+            logger.removeHandler(handler)
+            handler.close()
 
     return results
