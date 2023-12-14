@@ -236,11 +236,16 @@ def test_ts2img_no_collocation_integration():
                len(np.unique(ds4['var4'].values)) == 2
 
         ds2.close()  # needed on windows!
+        ds3.close()
+        ds4.close()
+
         assert list(ds.dims) == ['lon', 'lat', 'time']
         assert 'timedelta_seconds' not in ds.data_vars.keys()
         assert np.all(np.isnan(ds['var0'].values))
         assert np.all(ds['var2'].values == -9999)
         assert ds.data_vars.keys() == {'var0', 'var2', 'var3', 'var4'}
+
+        ds.close()
 
         ds = xr.open_dataset(
             os.path.join(path_out, '2020', 'test_20200702000000.nc'))
