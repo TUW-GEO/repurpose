@@ -16,7 +16,7 @@ dependencies:
   - xarray
   - pip
   # optional, for docs and testing
-  - nb_conda
+  #- nb_conda
   - matplotlib
   - ipykernel
   - pip:
