@@ -1,4 +1,5 @@
 import sys
+import time
 import warnings
 import os
 
@@ -20,6 +21,64 @@ from multiprocessing import Pool
 from datetime import datetime
 import sys
 from pathlib import Path
+from typing import List
+from glob import glob
+
+
+class ImageBaseConnection:
+    """
+    Wrapper for image reader that creates a list of all files in a root
+    directory upon initialisation.
+    When the reader tries to access a file but cannot find it, verify agains
+    the previously created list. If the file should exist, repeat the reading
+    assuming that due to some temporary issue the file is not accessible.
+
+    This protects against processing gaps due to e.g. temporary network issues.
+    """
+
+    def __init__(self, reader, max_retries=20, retry_delay_s=5):
+        """
+        Parameters
+        ----------
+        reader: MultiTemporalImageBase
+            Reader object for which the filelist is created
+        max_retries: int
+            Number of retries when a file is in the filelist but reading
+            fails.
+        retry_delay_s: int
+            Number of seconds to wait after each failed retry.
+        """
+        self.reader = reader
+        self.max_retries = max_retries
+        self.retry_delay_s = retry_delay_s
+
+        self.filelist = self._gen_filelist()
+
+    @property
+    def grid(self):
+        return self.reader.grid
+
+    def tstamps_for_daterange(self, *args, **kwargs):
+        return self.reader.tstamps_for_daterange(*args, **kwargs)
+
+    def _gen_filelist(self):
+        return glob(os.path.join(self.reader.path, '**'), recursive=True)
+
+    def read(self, timestamp, **kwargs):
+        filename = self.reader._build_filename(timestamp)
+        retries = 0
+        error = None
+        while filename in self.filelist and retries <= self.max_retries:
+            try:
+                return self.reader.read(timestamp, **kwargs)
+            except Exception as e:
+                error = e
+                logging.error(f"Error reading file {filename}: {error}")
+                time.sleep(self.retry_delay_s)
+            retries += 1
+
+        raise IOError(f"Could not read file at {timestamp} after "
+                      f"{self.max_retries} retries: {error}")
 
 
 def rootdir() -> Path:
@@ -57,7 +116,7 @@ def parallel_process_async(
         loglevel="WARNING",
         verbose=False,
         progress_bar_label="Processed"
-):
+) -> List:
     """
     Applies the passed function to all elements of the passed iterables.
     Parallel function calls are processed ASYNCHRONOUSLY (ie order of
@@ -102,7 +161,7 @@ def parallel_process_async(
 
     Returns
     -------
-    results: list
+    results: List
         List of return values from each function call
     """
     if activate_logging:
@@ -125,7 +184,6 @@ def parallel_process_async(
                 f"{FUNC.__name__}_{datetime.now().strftime('%Y%m%d%H%M')}.log")
         else:
             log_file = None
-
 
         if log_file:
             os.makedirs(os.path.dirname(log_file), exist_ok=True)
@@ -210,6 +268,7 @@ def parallel_process_async(
             logger.handlers.clear()
 
         handlers = logger.handlers[:]
+        handlers.clear()
         for handler in handlers:
             logger.removeHandler(handler)
             handler.close()
