@@ -288,7 +288,7 @@ class Img2Ts:
     def _write_orthogonal(self,
                           cell: int,
                           target_grid: CellGrid,
-                          celldata: dict[str, np.ndarray],
+                          celldata: dict,
                           timestamps: np.ndarray):
         """
         Write time series in OrthoMultiTs format.
