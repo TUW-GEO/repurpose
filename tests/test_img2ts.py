@@ -173,6 +173,8 @@ def test_img2ts_nonortho_daily_no_resampling():
             np.testing.assert_array_equal(ds.read(3).index.to_julian_date(),
                                           ts_should_jd_gpi3.to_julian_date())
 
+            ds.close()
+
         ds = xr.open_dataset(os.path.join(outputpath, '0000.nc'))
 
         np.testing.assert_array_equal(ds['location_id'].data,
@@ -181,7 +183,7 @@ def test_img2ts_nonortho_daily_no_resampling():
                                       np.array([1., -1., 1., -1.]))
         np.testing.assert_array_equal(ds['lon'].data,
                                       np.array([0.5, 0.5, -0.5, -0.5]))
-
+        ds.close()
         ds_in.close()
 
 
@@ -217,6 +219,9 @@ def test_img2ts_ortho_daily_no_resampling():
                 assert dates_should[i] == t
             nptest.assert_allclose(ds.dataset.variables['location_id'][:],
                                    np.array([0, 1, 2, 3]))
+            ds.close()
+
+        ds.close()
         ds_in.close()
 
 def test_img2ts_ortho_daily_resampling():
@@ -246,6 +251,7 @@ def test_img2ts_ortho_daily_resampling():
         grid = load_grid(os.path.join(outputpath, 'grid.nc'))
         ds = GriddedNcOrthoMultiTs(outputpath, grid=grid)
         ts = ds.read(0)
+        ds.close()
         nptest.assert_allclose(ts['var1'], ts_should)
         assert np.all(dates_should == ts.index)
 
@@ -261,6 +267,7 @@ def test_img2ts_ortho_daily_resampling():
 
         nptest.assert_allclose(ds['location_id'].data,
                                np.array([0, 1, 2, 3]))
+        ds.close()
         ds_in.close()
 
 def test_img2ts_ortho_daily_no_resampling_missing_day():

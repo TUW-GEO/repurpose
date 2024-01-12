@@ -1,6 +1,5 @@
-import sys
 import warnings
-
+import platform
 from repurpose.process import parallel_process_async, idx_chunks
 import pynetcf.time_series as nc
 from pygeogrids.grids import CellGrid
@@ -196,9 +195,9 @@ class Img2Ts:
         self.timekey = None  # to be set when reading data
 
         # Multiprocessing only used when n_proc > 1 chosen
-        if sys.platform != "linux" and n_proc != 1:
+        if platform.system().lower() != "linux" and n_proc != 1:
             warnings.warn("Parallel processing is for now only supported "
-                          "on Linux. Setting `n_proc=1`.")
+                          "on Linux systems. Setting `n_proc=1`.")
             self.n_proc = 1
         else:
             self.n_proc = n_proc
@@ -306,7 +305,7 @@ class Img2Ts:
         cell: int
             Cell number of the data to write
         target_grid: CellGrid
-            The data
+            Grid containing time series localtions.
         celldata : dict
             dictionary with variable names as keys and 2D numpy.arrays as
             values
@@ -443,12 +442,11 @@ class Img2Ts:
         img_stack_dict: dict[str, mem.anonymousmemmap]
             Dict containing the global image stacks to convert. Shared
             between processes.
-        timestamps
-        target_grid
-
-        Returns
-        -------
-
+        timestamps: numpy.ndarray
+            Array of datetime objects with same size as second dimension of
+            data arrays.
+        target_grid: CellGrid
+            Target points for resampling and storing the time series on.
         """""
         # look where in the subset the data is
         cell_index = np.where(
