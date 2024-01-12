@@ -17,6 +17,7 @@ dependencies:
   - pip
   # optional, for docs and testing
   #- nb_conda
+  - nbsphinx
   - matplotlib
   - ipykernel
   - pip:
@@ -24,6 +25,7 @@ dependencies:
     - pynetcf>=0.5.0
     - more_itertools
     - smecv_grid
+    - sharedmem
     - tqdm
     # Optional, for documentation and testing
     - nbconvert
