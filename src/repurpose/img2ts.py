@@ -1,3 +1,6 @@
+import sys
+import warnings
+
 from repurpose.process import parallel_process_async, idx_chunks
 import pynetcf.time_series as nc
 from pygeogrids.grids import CellGrid
@@ -193,7 +196,12 @@ class Img2Ts:
         self.timekey = None  # to be set when reading data
 
         # Multiprocessing only used when n_proc > 1 chosen
-        self.n_proc = n_proc
+        if sys.platform != "linux" and n_proc != 1:
+            warnings.warn("Parallel processing is for now only supported "
+                          "on Linux. Setting `n_proc=1`.")
+            self.n_proc = 1
+        else:
+            self.n_proc = n_proc
 
     def _read_image(self, date, target_grid):
         """
