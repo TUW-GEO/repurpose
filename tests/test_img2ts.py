@@ -298,4 +298,3 @@ def test_img2ts_ortho_daily_no_resampling_missing_day():
             assert dates_should == list(ts['time'])
             nptest.assert_allclose(ds.dataset.variables['location_id'][:],
                                    np.array([0, 1, 2, 3]))
-
