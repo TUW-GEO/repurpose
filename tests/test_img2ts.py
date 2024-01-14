@@ -148,7 +148,7 @@ def test_img2ts_nonortho_daily_no_resampling():
 
         img2ts = Img2Ts(ds_in,
                         outputpath, start, end, imgbuffer=10,
-                        input_grid=input_grid, n_proc=2)
+                        input_grid=input_grid, n_proc=1)
         img2ts.calc()
 
         ts_should_base = pd.date_range(start, end, freq='D')
@@ -198,7 +198,7 @@ def test_img2ts_ortho_daily_no_resampling():
         ds_in = TestMultiTemporalImageDatasetDaily(
             cls=TestOrthogonalImageDataset)
         img2ts = Img2Ts(ds_in, outputpath, start, end, imgbuffer=20,
-                        input_grid=input_grid, n_proc=4)
+                        input_grid=input_grid, n_proc=1)
 
         ts_should = np.concatenate([np.arange(5, 29, dtype=float),
                                     np.arange(1, 32, dtype=float),
@@ -240,7 +240,7 @@ def test_img2ts_ortho_daily_resampling():
         img2ts = Img2Ts(ds_in, outputpath, start, end, imgbuffer=20,
                         target_grid=target_grid,
                         input_grid=input_grid, r_neigh=4,
-                        n_proc=2)
+                        n_proc=1)
         img2ts.calc()
 
         ts_should = np.concatenate([np.arange(5, 29, dtype=float),
