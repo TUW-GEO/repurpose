@@ -36,7 +36,7 @@ class ImageBaseConnection:
     This protects against processing gaps due to e.g. temporary network issues.
     """
 
-    def __init__(self, reader, max_retries=20, retry_delay_s=5):
+    def __init__(self, reader, max_retries=20, retry_delay_s=10):
         """
         Parameters
         ----------
@@ -65,20 +65,32 @@ class ImageBaseConnection:
         return glob(os.path.join(self.reader.path, '**'), recursive=True)
 
     def read(self, timestamp, **kwargs):
-        filename = self.reader._build_filename(timestamp)
         retries = 0
+        img = None
         error = None
-        while filename in self.filelist and retries <= self.max_retries:
+        while img is None and retries <= self.max_retries:
+            filename = None
             try:
-                return self.reader.read(timestamp, **kwargs)
+                filename = self.reader._build_filename(timestamp)
+                img = self.reader.read(timestamp, **kwargs)
             except Exception as e:
-                error = e
-                logging.error(f"Error reading file {filename}: {error}")
-                time.sleep(self.retry_delay_s)
+                if filename is not None:
+                    if filename not in self.filelist:
+                        break
+                else:
+                    img = None
+                    error = e
+                    time.sleep(self.retry_delay_s)
+
             retries += 1
 
-        raise IOError(f"Could not read file at {timestamp} after "
-                      f"{self.max_retries} retries: {error}")
+        if img is None:
+            raise IOError(f"Reading file {filename} failed even after "
+                          f"{retries} retries: {error}")
+        else:
+            logging.info(f"Success reading {filename} after {retries} "
+                         f"retries")
+            return img
 
 
 def rootdir() -> Path:

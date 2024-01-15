@@ -1,5 +1,3 @@
-import warnings
-import platform
 from repurpose.process import parallel_process_async, idx_chunks
 import pynetcf.time_series as nc
 from pygeogrids.grids import CellGrid
@@ -12,7 +10,6 @@ import logging
 import pygeogrids.netcdf as grid2nc
 import pandas as pd
 from pygeobase.object_base import Image
-from multiprocessing import Manager
 
 
 class Img2TsError(Exception):
@@ -228,10 +225,9 @@ class Img2Ts:
             'fill_values': self.r_fill_values,
         }
 
-        try:
-            image = self.imgin.read(date, **self.input_kwargs)
-        except IOError as e:
-            logging.error("I/O error({0}): {1}".format(e.errno, e.strerror))
+        image = self.imgin.read(date, **self.input_kwargs)
+
+        if image is None:
             return None
 
         logging.info(f"Read image with constant time stamp. "
@@ -505,6 +501,7 @@ class Img2Ts:
                 STATIC_KWARGS=STATIC_KWARGS,
                 log_path=os.path.join(self.outputpath, '000_log'),
                 loglevel="INFO",
+                ignore_errors=True,
                 n_proc=self.n_proc,
                 show_progress_bars=False,
             )
@@ -561,6 +558,7 @@ class Img2Ts:
                 show_progress_bars=False,
                 log_path=os.path.join(self.outputpath, '000_log'),
                 loglevel="INFO",
+                ignore_errors=True,
                 n_proc=self.n_proc,
             )
 
