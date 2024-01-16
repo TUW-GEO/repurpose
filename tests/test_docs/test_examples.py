@@ -10,7 +10,6 @@ import nbformat
 import pytest
 from repurpose.process import rootdir
 
-
 examples_path = os.path.join(rootdir(), 'docs', 'examples')
 
 @pytest.mark.parametrize("notebook", [
@@ -32,5 +31,7 @@ def test_ipython_notebook(notebook):
     """
     preprocessor = ExecutePreprocessor(timeout=600, kernel_name="python3")
     with open(os.path.join(examples_path, notebook)) as f:
+        # warning: from nbformat.validator import normalize
         nb = nbformat.read(f, as_version=4)
     preprocessor.preprocess(nb)
+
