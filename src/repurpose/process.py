@@ -61,36 +61,47 @@ class ImageBaseConnection:
     def tstamps_for_daterange(self, *args, **kwargs):
         return self.reader.tstamps_for_daterange(*args, **kwargs)
 
-    def _gen_filelist(self):
-        return glob(os.path.join(self.reader.path, '**'), recursive=True)
+    def _gen_filelist(self) -> list:
+        flist = glob(os.path.join(self.reader.path, '**'), recursive=True)
+        return flist
 
     def read(self, timestamp, **kwargs):
-        retries = 0
+        retry = 0
         img = None
         error = None
-        while img is None and retries <= self.max_retries:
-            filename = None
+        filename = None
+
+        while (img is None) and (retry <= self.max_retries):
             try:
-                filename = self.reader._build_filename(timestamp)
+                if filename is None:
+                    filename = self.reader._build_filename(timestamp)
                 img = self.reader.read(timestamp, **kwargs)
+            # except IOError as e:
+            #     error = e
+            #     break
             except Exception as e:
+                logging.error(f"Error reading file (try {retry+1}) "
+                              f"at {timestamp}: {e}. "
+                              f"Trying again.")
                 if filename is not None:
                     if filename not in self.filelist:
+                        logging.error(
+                            f"File at {timestamp} does not exist.")
                         break
-                else:
-                    img = None
-                    error = e
-                    time.sleep(self.retry_delay_s)
+                # else:
+                img = None
+                error = e
+                time.sleep(self.retry_delay_s)
 
-            retries += 1
+            retry += 1
 
         if img is None:
-            raise IOError(f"Reading file {filename} failed even after "
-                          f"{retries} retries: {error}")
+            logging.error(f"Reading file at {timestamp} failed after "
+                          f"{retry} retries: {error}")
         else:
-            logging.info(f"Success reading {filename} after {retries} "
-                         f"retries")
-            return img
+            logging.info(f"Success reading {filename} after {retry} "
+                         f"tries.")
+        return img
 
 
 def rootdir() -> Path:
@@ -125,6 +136,7 @@ def parallel_process_async(
         ignore_errors=False,
         activate_logging=True,
         log_path=None,
+        log_filename=None,
         loglevel="WARNING",
         verbose=False,
         progress_bar_label="Processed"
@@ -163,6 +175,9 @@ def parallel_process_async(
         If False, no logging is done at all (neither to file nor to stdout).
     log_path: str, optional (default: None)
         If provided, a log file is created in the passed directory.
+    log_filename: str, optional (default: None)
+        Name of the logfile in `log_path to create. If None is chosen, a name
+        is created automatically. If `log_path is None, this has no effect.
     loglevel: str, optional (default: "WARNING")
         Log level to use for logging. Must be one of
         ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"].
@@ -178,22 +193,23 @@ def parallel_process_async(
     """
     if activate_logging:
         logger = logging.getLogger()
-        streamHandler = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        streamHandler.setFormatter(formatter)
 
         if STATIC_KWARGS is None:
             STATIC_KWARGS = dict()
 
         if verbose:
+            streamHandler = logging.StreamHandler(sys.stdout)
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            streamHandler.setFormatter(formatter)
             logger.setLevel('DEBUG')
             logger.addHandler(streamHandler)
 
         if log_path is not None:
-            log_file = os.path.join(
-                log_path,
-                f"{FUNC.__name__}_{datetime.now().strftime('%Y%m%d%H%M')}.log")
+            if log_filename is None:
+                d = datetime.now().strftime('%Y%m%d%H%M')
+                log_filename = f"{FUNC.__name__}_{d}.log"
+            log_file = os.path.join(log_path, log_filename)
         else:
             log_file = None
 
@@ -204,6 +220,7 @@ def parallel_process_async(
                 level=loglevel.upper(),
                 format="%(levelname)s %(asctime)s %(message)s",
                 datefmt="%Y-%m-%d %H:%M:%S",
+                force=True,
             )
     else:
         logger = None
@@ -280,9 +297,9 @@ def parallel_process_async(
             logger.handlers.clear()
 
         handlers = logger.handlers[:]
-        handlers.clear()
         for handler in handlers:
             logger.removeHandler(handler)
             handler.close()
+        handlers.clear()
 
     return results
