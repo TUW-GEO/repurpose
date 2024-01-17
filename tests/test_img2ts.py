@@ -39,9 +39,7 @@ from pygeobase.object_base import Image
 from pygeogrids import BasicGrid
 from pygeogrids.netcdf import load_grid
 from pynetcf.time_series import OrthoMultiTs, GriddedNcIndexedRaggedTs, GriddedNcOrthoMultiTs
-from glob import glob
 import xarray as xr
-import pytest
 
 import tempfile
 import numpy.testing as nptest

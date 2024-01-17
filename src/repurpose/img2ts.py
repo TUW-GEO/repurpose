@@ -118,7 +118,10 @@ class Img2Ts:
         Default: True
     n_proc: int, optional (default: 1)
         Number of parallel processes. Multiprocessing is only used when
-        `n_proc` > 1. Applies to data reading and writing.
+        `n_proc` > 1. Applies to data reading and writing. Should be chosen
+        according to the file connection. A slow connection might be overloaded
+        by too many processes trying to read data (e.g. network).
+        If unsure, better leave this at 1.
     """
 
     def __init__(self,
@@ -193,6 +196,9 @@ class Img2Ts:
 
         self.n_proc = n_proc
 
+        self.log_filename = \
+            f"img2ts_{datetime.now().strftime('%Y%m%d%H%M')}.log"
+
     def _read_image(self, date, target_grid):
         """
         Function to parallelize reading image data from dataset.
@@ -214,7 +220,6 @@ class Img2Ts:
         orthogonal: bool
             Whether the image fits the orthogonal time series format or not.
         """
-
         # optional on-the-fly spatial resampling
         resample_kwargs = {
             'methods': self.r_methods,
@@ -383,8 +388,8 @@ class Img2Ts:
             dataout.add_global_attr(
                 'geospatial_lon_max', np.max(cell_lons))
 
-            # for this dataset we have to loop through the gpis since each time series
-            # can be different in length
+            # for this dataset we have to loop through the gpis since each
+            # time series can be different in length
             for i, (gpi, gpi_lon, gpi_lat) in enumerate(
                     zip(cell_gpis, cell_lons, cell_lats)):
                 gpi_data = {}
@@ -433,7 +438,7 @@ class Img2Ts:
             os.path.join(self.outputpath, self.gridname), self.target_grid)
 
         for img_stack_dict, timestamps in self.img_bulk():
-            # ==================================================================
+            # =================================================================
             start_time = datetime.now()
 
             # temporally drop grids, due to issue when pickling them...
@@ -500,6 +505,7 @@ class Img2Ts:
                 ITER_KWARGS=ITER_KWARGS,
                 STATIC_KWARGS=STATIC_KWARGS,
                 log_path=os.path.join(self.outputpath, '000_log'),
+                log_filename=self.log_filename,
                 loglevel="INFO",
                 ignore_errors=True,
                 n_proc=self.n_proc,
@@ -557,6 +563,7 @@ class Img2Ts:
                 STATIC_KWARGS={'target_grid': target_grid},
                 show_progress_bars=False,
                 log_path=os.path.join(self.outputpath, '000_log'),
+                log_filename=self.log_filename,
                 loglevel="INFO",
                 ignore_errors=True,
                 n_proc=self.n_proc,
