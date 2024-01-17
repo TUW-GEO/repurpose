@@ -36,16 +36,16 @@ class ImageBaseConnection:
     This protects against processing gaps due to e.g. temporary network issues.
     """
 
-    def __init__(self, reader, max_retries=20, retry_delay_s=10):
+    def __init__(self, reader, max_retries=99, retry_delay_s=1):
         """
         Parameters
         ----------
         reader: MultiTemporalImageBase
             Reader object for which the filelist is created
-        max_retries: int
+        max_retries: int, optional (default: 10)
             Number of retries when a file is in the filelist but reading
             fails.
-        retry_delay_s: int
+        retry_delay_s: int, optional (default: 1)
             Number of seconds to wait after each failed retry.
         """
         self.reader = reader
@@ -76,9 +76,6 @@ class ImageBaseConnection:
                 if filename is None:
                     filename = self.reader._build_filename(timestamp)
                 img = self.reader.read(timestamp, **kwargs)
-            # except IOError as e:
-            #     error = e
-            #     break
             except Exception as e:
                 logging.error(f"Error reading file (try {retry+1}) "
                               f"at {timestamp}: {e}. "

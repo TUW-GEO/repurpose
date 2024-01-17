@@ -5,7 +5,7 @@ Changelog
 Unreleased changes in master branch
 ===================================
 
--
+- Added option to parallelize Img2Ts process
 
 Version 0.10
 ============
