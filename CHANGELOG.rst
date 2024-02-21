@@ -6,6 +6,7 @@ Unreleased changes in master branch
 ===================================
 
 - Added option to parallelize Img2Ts process
+- Fix bug where a wrong grid attribute was used.
 
 Version 0.10
 ============

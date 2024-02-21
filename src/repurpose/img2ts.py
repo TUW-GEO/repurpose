@@ -140,7 +140,7 @@ class Img2Ts:
         if not hasattr(self.imgin, 'grid'):
             self.input_grid = input_grid
         else:
-            self.input_grid = self.imgin.glob_grid
+            self.input_grid = self.imgin.grid
 
         if self.input_grid is None and target_grid is None:
             raise ValueError("Either the input dataset has to have a grid, "
