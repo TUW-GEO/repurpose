@@ -1,20 +1,5 @@
-import sys
 import time
-import warnings
 import os
-
-# if 'numpy' in sys.modules:
-#     warnings.warn("Numpy is already imported. Please make sure "
-#                   "`repurpose.process` is imported before numpy to avoid "
-#                   "numpy multi-threading.")
-#
-# # Note: Must be set BEFORE the first numpy import!!
-# os.environ['MKL_NUM_THREADS'] = '1'
-# os.environ['NUMEXPR_NUM_THREADS'] = '1'
-# os.environ['OMP_NUM_THREADS'] = '1'
-# os.environ['MKL_DYNAMIC'] = 'FALSE'
-# os.environ['OPENBLAS_NUM_THREADS'] = '1'
-
 import traceback
 import numpy as np
 from tqdm import tqdm
