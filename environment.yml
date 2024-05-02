@@ -26,6 +26,7 @@ dependencies:
     - more_itertools
     - smecv_grid
     - tqdm
+    - joblib
     # Optional, for documentation and testing
     - nbconvert
     - sphinx_rtd_theme

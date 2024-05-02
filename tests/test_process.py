@@ -3,6 +3,7 @@ import pandas as pd
 import time
 import tempfile
 import logging
+import pytest
 
 from repurpose.process import parallel_process_async, idx_chunks
 
@@ -24,12 +25,17 @@ def func(x: int, p: int):
     logging.info(f'x={x}, p={p}')
     return x**p
 
-def test_apply_to_elements():
+
+@pytest.mark.parametrize("n_proc,backend", [
+    ("1", None),  # backend doesn't matter in this case
+    ("2", "threading"), ("2", "multiprocessing"), ("2", "loky")
+    ])
+def test_apply_to_elements(n_proc, backend):
     iter_kwargs = {'x': [1, 2, 3, 4]}
     static_kwargs = {'p': 2}
     with tempfile.TemporaryDirectory() as log_path:
         res = parallel_process_async(
-            func, iter_kwargs, static_kwargs, n_proc=1,
+            func, iter_kwargs, static_kwargs, n_proc=int(n_proc),
             show_progress_bars=False, verbose=False, loglevel="DEBUG",
-            ignore_errors=True, log_path=log_path)
-        assert sorted(res) == [1, 4, 9, 16]
+            ignore_errors=True, log_path=log_path, backend=backend)
+        assert res == [1, 4, 9, 16]
