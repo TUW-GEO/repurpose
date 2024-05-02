@@ -1,5 +1,13 @@
 import time
 import os
+
+# Note: Must be set BEFORE the first numpy import!!
+os.environ['MKL_NUM_THREADS'] = '1'
+os.environ['NUMEXPR_NUM_THREADS'] = '1'
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_DYNAMIC'] = 'FALSE'
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+
 import traceback
 import numpy as np
 from tqdm import tqdm
@@ -341,7 +349,8 @@ def parallel_process_async(
             log_level = None
             listener = None
 
-        with parallel_config(backend=backend, inner_max_num_threads=1):
+        n = 1 if backend == 'loky' else None
+        with parallel_config(backend=backend, inner_max_num_threads=n):
             results: list = ProgressParallel(
                 use_tqdm=show_progress_bars,
                 n_jobs=n_proc,
