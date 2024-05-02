@@ -439,6 +439,8 @@ class Img2Ts:
 
         for img_stack_dict, timestamps in self.img_bulk():
             # =================================================================
+            logging.info(f"Finished reading bulk with {len(timestamps)} images")
+
             start_time = datetime.now()
 
             # temporally drop grids, due to issue when pickling them...
@@ -451,6 +453,7 @@ class Img2Ts:
 
             keys = list(img_stack_dict.keys())
             for key in keys:
+                #print(key)
                 # rename variable in output dataset
                 if self.variable_rename is None:
                     var_new_name = str(key)
@@ -473,6 +476,7 @@ class Img2Ts:
             ITER_KWARGS = {'cell': [], 'celldata': []}
 
             for cell in np.unique(target_grid.activearrcell):
+                #print(cell)
                 cell_idx = np.where(cells == cell)[0]
 
                 if len(cell_idx) == 0:
@@ -486,7 +490,6 @@ class Img2Ts:
                         np.atleast_2d(img_stack_dict[k])[:, cell_idx], 0, 1)
                     img_stack_dict[k] = np.delete(img_stack_dict[k], cell_idx,
                                                   axis=1)
-
                 cells = np.delete(cells, cell_idx)
 
                 ITER_KWARGS['celldata'].append(celldata)
