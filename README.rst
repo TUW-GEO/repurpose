@@ -71,7 +71,7 @@ It includes two main modules:
 - ``ts2img`` for time series to image conversion, including support for temporal
   resampling.
 - ``resample`` for spatial resampling of (regular or irregular) gridded data to different resolutions.
-- ``process``contains a framework for parallel processing, error handling and logging based on `joblib <https://github.com/joblib/joblib>`_
+- ``process`` contains a framework for parallel processing, error handling and logging based on `joblib <https://github.com/joblib/joblib>`_
 
 Alternatives
 ============
