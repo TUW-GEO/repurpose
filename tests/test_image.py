@@ -18,7 +18,7 @@ class TestRegularImageStackNoCollocation(unittest.TestCase):
     Time series and image stack match exactly (grid and timestamps)
     """
     def setUp(self) -> None:
-        self.timestamps = pd.date_range('2020-01-01', '2020-01-02', freq='6H')
+        self.timestamps = pd.date_range('2020-01-01', '2020-01-02', freq='6h')
         self.writer = Regular3dimImageStack.from_genreg(
             resolution=0.25, extent=bbox_spain, timestamps=self.timestamps,
             time_collocation=False, reference_time="1900-01-01T00:00:00",
@@ -125,7 +125,7 @@ class TestRegularImageStackWithCollocation(unittest.TestCase):
     """
     def setUp(self) -> None:
         grid_spain = genreg_grid(1, 1, *bbox_spain, origin="bottom")
-        self.img_timestamps = pd.date_range('2020-01-01', '2020-01-02', freq='6H')
+        self.img_timestamps = pd.date_range('2020-01-01', '2020-01-02', freq='6h')
         # 1h, 3.5h, 0.125h, 5.9999h, 0h
         self.offsets = np.array([3600, 3600*3.5, 3600*0.125, 3600*5.9999, 0.])
         self.timeoffsets = np.array([timedelta(seconds=o) for o in self.offsets])

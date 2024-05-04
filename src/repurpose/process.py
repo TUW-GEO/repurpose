@@ -250,6 +250,7 @@ def parallel_process_async(
         ```
     verbose: bool, optional (default: False)
         Print all logging messages to stdout, useful for debugging.
+        Only effective when logging is activated.
     progress_bar_label: str, optional (default: "Processed")
         Label to use for the progress bar.
     backend: Literal["threading", "multiprocessing", "loky"] = "loky"
@@ -264,12 +265,12 @@ def parallel_process_async(
         List of return values from each function call or None if no return
         values are found.
     """
+    if STATIC_KWARGS is None:
+        STATIC_KWARGS = dict()
+
     if activate_logging:
         logger = logging.getLogger(logger_name)
         logger.setLevel(loglevel.upper())
-
-        if STATIC_KWARGS is None:
-            STATIC_KWARGS = dict()
 
         if verbose:
             # in this case we also print ALL log messages
