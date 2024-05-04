@@ -2,23 +2,25 @@
 repurpose
 =========
 
-.. image:: https://github.com/TUW-GEO/repurpose/actions/workflows/build.yml/badge.svg?branch=master
+|ci| |cov| |pip| |doc|
+
+.. |ci| image:: https://github.com/TUW-GEO/repurpose/actions/workflows/build.yml/badge.svg?branch=master
    :target: https://github.com/TUW-GEO/repurpose/actions
 
-.. image:: https://coveralls.io/repos/github/TUW-GEO/repurpose/badge.svg?branch=master
+.. |cov| image:: https://coveralls.io/repos/github/TUW-GEO/repurpose/badge.svg?branch=master
    :target: https://coveralls.io/github/TUW-GEO/repurpose?branch=master
 
-.. image:: https://badge.fury.io/py/repurpose.svg
+.. |pip| image:: https://badge.fury.io/py/repurpose.svg
     :target: http://badge.fury.io/py/repurpose
 
-.. image:: https://readthedocs.org/projects/repurpose/badge/?version=latest
+.. |doc| image:: https://readthedocs.org/projects/repurpose/badge/?version=latest
    :target: http://repurpose.readthedocs.org/
 
 
 This package provides routines for the conversion of image formats to time
-series and vice versa. It is part of the `poets project
-<http://tuw-geo.github.io/poets/>`_ and works best with the readers and writers
-supported there. The main use case is for data that is sampled irregularly in
+series and vice versa. It works best with the readers and writers
+supported by `pynetcf <https://github.com/TUW-GEO/pynetcf>`_.
+The main use case is for data that is sampled irregularly in
 space or time. If you have data that is sampled in regular intervals then there
 are alternatives to this package which might be better for your use case. See
 `Alternatives`_ for more detail.
@@ -67,8 +69,9 @@ It includes two main modules:
 - ``img2ts`` for image/swath to time series conversion, including support for
   spatial resampling.
 - ``ts2img`` for time series to image conversion, including support for temporal
-  resampling. This module is very experimental at the moment.
+  resampling.
 - ``resample`` for spatial resampling of (regular or irregular) gridded data to different resolutions.
+- ``process``contains a framework for parallel processing, error handling and logging based on `joblib <https://github.com/joblib/joblib>`_
 
 Alternatives
 ============
@@ -97,7 +100,8 @@ against our master branch for new features or bug fixes.
 Development setup
 -----------------
 
-For Development we recommend a ``conda`` environment
+For Development we recommend a ``conda`` environment with all packages listed
+in `environment.yml`.
 
 Guidelines
 ----------
