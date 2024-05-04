@@ -84,7 +84,7 @@ def test_ts2img_time_collocation_integration():
             stack[var].values = np.nan_to_num(stack[var].values, nan=fillvalue)
         return stack
 
-    timestamps_image = pd.date_range('2020-07-01', '2020-07-31', freq='6H')
+    timestamps_image = pd.date_range('2020-07-01', '2020-07-31', freq='6h')
     timestamps_ts = timestamps_image[20:50]
 
     # 2020070412 and 2020070418 are missing:
