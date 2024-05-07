@@ -79,7 +79,8 @@ class TestNonOrthogonalImageDataset(ImageBase):
 
         if timestamp == datetime(2016, 1, 1):
             raise IOError("no data for day")
-        jd = pd.to_datetime(timestamp).to_julian_date()
+        jd = pd.to_datetime(timestamp).to_julian_date() - 2400000.5
+
         # 2x2 pixels around zero lat, lon
         return Image(np.array([0.5, 0.5, -0.5, -0.5]),
                      np.array([1., -1., 1., -1.]),

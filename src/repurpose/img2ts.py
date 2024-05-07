@@ -185,7 +185,6 @@ class Img2Ts:
         self.ts_attributes = ts_attributes
         self.ts_dtypes = ts_dtypes
         self.time_units = time_units
-        self.non_ortho_time_units = "days since  1858-11-17 00:00:00"
 
         # if each image has only one timestamp then we are handling
         # time series of type Orthogonal multidimensional array representation
@@ -220,6 +219,8 @@ class Img2Ts:
         orthogonal: bool
             Whether the image fits the orthogonal time series format or not.
         """
+        logger = logging.getLogger('img2ts')
+
         # optional on-the-fly spatial resampling
         resample_kwargs = {
             'methods': self.r_methods,
@@ -235,8 +236,8 @@ class Img2Ts:
         if image is None:
             return None
 
-        logging.info(f"Read image with constant time stamp. "
-                     f"Timestamp: {image.timestamp.isoformat()}")
+        logger.info(f"Read image with constant time stamp. "
+                    f"Timestamp: {image.timestamp.isoformat()}")
 
         if self.resample:
             if target_grid is None:
@@ -308,6 +309,8 @@ class Img2Ts:
             Array of datetime objects with same size as second dimension of
             data arrays.
         """
+        logger = logging.getLogger('img2ts')  # can be used to write to file
+
         cell_gpis, cell_lons, cell_lats = \
             target_grid.grid_points_for_cell(cell)
 
@@ -360,6 +363,8 @@ class Img2Ts:
         cell_index: np.ndarray
             Inidces of cell points in the global stack
         """
+        logger = logging.getLogger('img2ts')  # can be used to write to file
+
         cell_gpis, cell_lons, cell_lats = \
             target_grid.grid_points_for_cell(cell)
 
@@ -371,7 +376,7 @@ class Img2Ts:
                 mode='a',
                 zlib=self.zlib,
                 unlim_chunksize=self.unlim_chunksize,
-                time_units=self.non_ortho_time_units) as dataout:
+                time_units=self.time_units) as dataout:
 
             # add global attributes to file
             if self.global_attr is not None:
@@ -392,9 +397,12 @@ class Img2Ts:
             # time series can be different in length
             for i, (gpi, gpi_lon, gpi_lat) in enumerate(
                     zip(cell_gpis, cell_lons, cell_lats)):
+
                 gpi_data = {}
-                # convert to modified julian date
-                gpi_jd = celldata[self.timekey][i, :] - 2400000.5
+
+                # no conversion, make sure the numeric date match with time_unit
+                gpi_time = celldata[self.timekey][i, :]
+
                 # remove measurements that were filled with the fill value
                 # during resampling
                 # doing this on the basis of the time variable should
@@ -407,25 +415,39 @@ class Img2Ts:
                         else:
                             time_fill_value = self.r_fill_values
 
-                        valid_mask = gpi_jd != time_fill_value
+                        if np.isnan(time_fill_value):
+                            valid_mask = ~np.isnan(gpi_time)
+                        else:
+                            valid_mask = gpi_time != time_fill_value
                     else:
-                        valid_mask = np.invert(gpi_jd.mask)
-                    gpi_jd = gpi_jd[valid_mask]
+                        valid_mask = np.invert(gpi_time.mask)
+                    gpi_time = gpi_time[valid_mask]
                 else:
-                    # all are valid if no resampling took place
-                    valid_mask = slice(None, None, None)
+                    # drop data where time stamps are NaN
+                    valid_mask = np.isfinite(gpi_time)
 
-                if gpi_jd.size > 0:
+                if gpi_time.size > 0:
+                    _data_avail = False
                     for key in celldata:
                         if key == self.timekey:
                             continue
                         gpi_data[key] = celldata[key][i, valid_mask]
+                        if not _data_avail:
+                            if len(gpi_data[key]) > 0:
+                                _data_avail = True
 
-                    # transform into data frame
-                    dataout.write(gpi, gpi_data, gpi_jd,
-                                  lon=gpi_lon, lat=gpi_lat,
-                                  attributes=self.ts_attributes,
-                                  dates_direct=True)
+                    if _data_avail:
+                        if (self.timekey is not None ) and \
+                           (self.ts_attributes is not None):
+                            if (self.timekey in self.ts_attributes) and \
+                               (self.timekey not in gpi_data):
+                                _ = self.ts_attributes.pop(self.timekey)
+
+                        # transform into data frame
+                        dataout.write(gpi, gpi_data, gpi_time,
+                                      lon=gpi_lon, lat=gpi_lat,
+                                      attributes=self.ts_attributes,
+                                      dates_direct=True)
 
     def calc(self):
         """
@@ -507,6 +529,7 @@ class Img2Ts:
                 log_path=os.path.join(self.outputpath, '000_log'),
                 log_filename=self.log_filename,
                 loglevel="INFO",
+                logger_name='img2ts',
                 ignore_errors=True,
                 n_proc=self.n_proc,
                 show_progress_bars=False,
@@ -565,6 +588,7 @@ class Img2Ts:
                 log_path=os.path.join(self.outputpath, '000_log'),
                 log_filename=self.log_filename,
                 loglevel="INFO",
+                logger_name='img2ts',
                 ignore_errors=True,
                 n_proc=self.n_proc,
             )
