@@ -136,6 +136,9 @@ class Ts2Img:
     loglevel: str, optional (default: 'WARNING')
         Logging level.
         Must be one of 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'.
+    ignore_errors: bool, optional (default: False)
+        Instead of raising an exception, log errors and continue the
+        process. E.g. to skip individual corrupt files.
     """
 
     # Some variables are generated internally and cannot be used.
@@ -146,11 +149,14 @@ class Ts2Img:
 
     def __init__(self, ts_reader, img_grid, timestamps,
                  variables=None, read_function='read',
-                 max_dist=18000, time_collocation=True, loglevel="WARNING"):
+                 max_dist=18000, time_collocation=True, loglevel="WARNING",
+                 ignore_errors=False):
 
         self.ts_reader = ts_reader
         self.img_grid: CellGrid = Regular3dimImageStack._eval_grid(img_grid)
         self.timestamps = timestamps
+
+        self.ignore_errors = ignore_errors
 
         if variables is not None:
             if not isinstance(variables, dict):
@@ -230,7 +236,7 @@ class Ts2Img:
         stack = parallel_process_async(
             _convert, ITER_KWARGS, STATIC_KWARGS, n_proc=n_proc,
             show_progress_bars=True, log_path=log_path,
-            verbose=False, ignore_errors=True)
+            verbose=False, ignore_errors=self.ignore_errors)
 
         stack = xr.combine_by_coords(stack)
 
@@ -505,5 +511,6 @@ class Ts2Img:
             show_progress_bars=True,
             verbose=False,
             loglevel=self.loglevel,
-            ignore_errors=True,
+            ignore_errors=self.ignore_errors,
         )
+
