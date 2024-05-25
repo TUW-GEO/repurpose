@@ -264,7 +264,7 @@ def test_img2ts_ortho_daily_no_resampling():
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
                            np.array([1, -1, 1, -1]), )
 
-    with (tempfile.TemporaryDirectory() as outputpath):
+    with tempfile.TemporaryDirectory() as outputpath:
         start = datetime(2014, 2, 5)
         end = datetime(2014, 4, 21)
 
