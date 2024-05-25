@@ -32,8 +32,8 @@ class ImageBaseConnection:
 
     This protects against processing gaps due to e.g. temporary network issues.
     """
-
-    def __init__(self, reader, max_retries=99, retry_delay_s=1):
+    def __init__(self, reader, max_retries=99, retry_delay_s=1,
+                 attr_read='read', attr_path='path', attr_grid='grid'):
         """
         Parameters
         ----------
@@ -44,25 +44,39 @@ class ImageBaseConnection:
             fails.
         retry_delay_s: int, optional (default: 1)
             Number of seconds to wait after each failed retry.
+        attr_read: str, optional (default: 'read')
+            Name of method to call to read an image. Will add a method of
+            the same name to this wrapper.
+        attr_path: str, optional (default: 'path')
+            Name of the reader attribute to access the data path
+        attr_grid: str, optional (default: 'grid')
+            Name of the reader attribute to access the grid definition
         """
         self.reader = reader
         self.max_retries = max_retries
         self.retry_delay_s = retry_delay_s
 
+        self.attr_read = attr_read
+        self.attr_path = attr_path
+        self.attr_grid = attr_grid
+
         self.filelist = self._gen_filelist()
+
+        setattr(self, self.attr_read, self._read)   # map read method to ._read
 
     @property
     def grid(self):
-        return self.reader.grid
+        return getattr(self.reader, self.attr_grid)
 
     def tstamps_for_daterange(self, *args, **kwargs):
         return self.reader.tstamps_for_daterange(*args, **kwargs)
 
     def _gen_filelist(self) -> list:
-        flist = glob(os.path.join(self.reader.path, '**'), recursive=True)
+        path = getattr(self.reader, self.attr_path)
+        flist = glob(os.path.join(path, '**'), recursive=True)
         return flist
 
-    def read(self, timestamp, **kwargs):
+    def _read(self, timestamp, **kwargs):
         retry = 0
         img = None
         error = None
@@ -72,7 +86,7 @@ class ImageBaseConnection:
             try:
                 if filename is None:
                     filename = self.reader._build_filename(timestamp)
-                img = self.reader.read(timestamp, **kwargs)
+                img = getattr(self.reader, self.attr_read)(timestamp, **kwargs)
             except Exception as e:
                 logging.error(f"Error reading file (try {retry+1}) "
                               f"at {timestamp}: {e}. "
@@ -383,6 +397,9 @@ def parallel_process_async(
             logger.removeHandler(handler)
             handler.close()
         handlers.clear()
+
+    del ITER_KWARGS
+    del STATIC_KWARGS
 
     if len(results) == 0:
         return None

@@ -167,8 +167,6 @@ class TestRegularImageStackWithCollocation(unittest.TestCase):
         assert ds['var1'].values.dtype == 'float32'
         assert ds['var2'].values.dtype == 'int8'
 
-        print(ds['timedelta_seconds'].values)
-        print(self.offsets)
         assert np.array_equal(ds['timedelta_seconds'].values,
                               self.offsets.astype(np.float32))
 
