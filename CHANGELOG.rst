@@ -4,7 +4,12 @@ Changelog
 
 Unreleased changes in master branch
 ===================================
+-
 
+Version 0.11
+============
+
+- Use joblib for parallel processing framework, improved logging
 - Added option to parallelize Img2Ts process
 - Fix bug where a wrong grid attribute was used.
 

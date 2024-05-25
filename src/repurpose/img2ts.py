@@ -1,8 +1,6 @@
 from repurpose.process import parallel_process_async, idx_chunks
-from typing import List
 import pynetcf.time_series as nc
-from pygeogrids.grids import CellGrid, BasicGrid
-import pygeogrids.grids as grids
+from pygeogrids.grids import CellGrid
 import repurpose.resample as resamp
 import numpy as np
 import os
@@ -577,6 +575,8 @@ class Img2Ts:
 
         for img_stack_dict, timestamps in self.img_bulk():
             # =================================================================
+            logging.info(f"Finished reading bulk with {len(timestamps)} images")
+
             start_time = datetime.now()
 
             # temporally drop grids, due to issue when pickling them...
@@ -597,6 +597,7 @@ class Img2Ts:
 
             keys = list(img_stack_dict.keys())
             for key in keys:
+                #print(key)
                 # rename variable in output dataset
                 if self.variable_rename is None:
                     var_new_name = str(key)
