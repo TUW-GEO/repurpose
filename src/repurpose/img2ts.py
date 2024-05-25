@@ -226,7 +226,7 @@ class Img2Ts:
                 cellsize_lat=cellsize_lat, cellsize_lon=cellsize_lon)
         else:
             if cellsize_lat is not None or cellsize_lon is not None:
-                warnings.warn("A cell size was specified, but the input grid"
+                warnings.warn("A cell size was specified, but the input grid "
                               "is already a CellGrid. Your settings will be"
                               "ignored!")
 
@@ -644,6 +644,8 @@ class Img2Ts:
                              indices, axis=0)[1:]
                 ITER_KWARGS[k] = v
 
+            del img_stack_dict
+
             ITER_KWARGS['cell_gpis'] = np.split(_grid.activegpis, indices)[1:]
             ITER_KWARGS['cell_lons'] = np.split(_grid.activearrlon, indices)[1:]
             ITER_KWARGS['cell_lats'] = np.split(_grid.activearrlat, indices)[1:]
@@ -672,6 +674,8 @@ class Img2Ts:
 
             self.target_grid = target_grid
             self.input_grid = input_grid
+
+            del ITER_KWARGS, STATIC_KWARGS
 
             logger = logging.getLogger('img2ts')
             logger.info(f"Chunk processed in "
@@ -748,6 +752,8 @@ class Img2Ts:
                     self.timekey = img.timekey
 
                 timestamps = np.append(timestamps, img.timestamp)
+
+            del results, ITER_KWARGS
 
             order = np.argsort(timestamps)
             timestamps = timestamps[order]

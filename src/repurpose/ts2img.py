@@ -500,17 +500,20 @@ class Ts2Img:
             del self.stack
             self.stack = None
 
+        ITER_KWARGS = {'image': images, 'filename': filenames, 'dt': dts}
+        STATIC_KWARGS = {'out_path': path_out, 'annual_folder': annual_folder,
+                         'encoding': encoding}
+
         _ = parallel_process_async(
             FUNC=_write_img,
-            ITER_KWARGS={'image': images, 'filename': filenames,
-                         'dt': dts},
-            STATIC_KWARGS={'out_path': path_out,
-                           'annual_folder': annual_folder,
-                           'encoding': encoding},
+            ITER_KWARGS=ITER_KWARGS,
+            STATIC_KWARGS=STATIC_KWARGS,
             n_proc=n_proc,
             show_progress_bars=True,
             verbose=False,
             loglevel=self.loglevel,
             ignore_errors=self.ignore_errors,
         )
+
+        del ITER_KWARGS, STATIC_KWARGS, images, _
 
