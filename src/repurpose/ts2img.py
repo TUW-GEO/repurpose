@@ -76,8 +76,7 @@ def _write_img(
     if annual_folder:
         out_path = os.path.join(out_path, f"{dt.year:04}")
 
-    if not os.path.exists(out_path):
-        os.makedirs(out_path)
+    os.makedirs(out_path, exist_ok=True)
 
     image.attrs['date_created'] = f"File created: {datetime.now()}"
     image.to_netcdf(os.path.join(out_path, filename),
@@ -242,7 +241,7 @@ class Ts2Img:
 
         stack = parallel_process_async(
             _convert, ITER_KWARGS, STATIC_KWARGS, n_proc=n_proc,
-            show_progress_bars=True, log_path=log_path,
+            show_progress_bars=True, log_path=log_path, backend='threading',
             verbose=False, ignore_errors=self.ignore_errors)
 
         stack = xr.combine_by_coords(stack)
