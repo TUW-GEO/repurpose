@@ -211,7 +211,7 @@ def parallel_process_async(
         logger_name=None,
         verbose=False,
         progress_bar_label="Processed",
-        backend="loky",
+        backend="threading",
         sharedmem=False,
         parallel_kwargs=None,
 ) -> list:
@@ -267,9 +267,9 @@ def parallel_process_async(
         Only effective when logging is activated.
     progress_bar_label: str, optional (default: "Processed")
         Label to use for the progress bar.
-    backend: Literal["threading", "multiprocessing", "loky"] = "loky"
+    backend: Literal["threading", "multiprocessing", "loky"] = "threading"
         The backend to use for parallel execution (if n_proc > 1).
-        Defaults to "loky". See joblib docs for more info.
+        Defaults to "threading". See joblib docs for more info.
     sharedmem: bool, optional (default:True)
         Activate shared memory option (slow)
 
