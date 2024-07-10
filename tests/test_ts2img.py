@@ -102,17 +102,16 @@ def test_ts2img_time_collocation_integration():
                        variables={'var0': 'var1', 'var2': 'var2'})
 
     with tempfile.TemporaryDirectory() as path_out:
-        with pytest.warns(UserWarning):  # expected warning about empty stack
-            converter.calc(
-                path_out, format_out='slice',
-                fn_template="test_{datetime}.nc", drop_empty=True,
-                preprocess=preprocess_func, preprocess_kwargs={'mult': 2},
-                postprocess=postprocess_func, postprocess_kwargs={'vars': ('var2',)},
-                encoding={'var1': {'dtype': 'int64', 'scale_factor': 0.0000001,
-                                   '_FillValue': -9999}, },
-                var_attrs={'var1': {'long_name': 'test_var1', 'units': 'm'}},
-                glob_attrs={'test': 'test'}, var_fillvalues={'var2': -9999},
-                var_dtypes={'var2': 'int32'}, n_proc=1)
+        converter.calc(
+            path_out, format_out='slice',
+            fn_template="test_{datetime}.nc", drop_empty=True,
+            preprocess=preprocess_func, preprocess_kwargs={'mult': 2},
+            postprocess=postprocess_func, postprocess_kwargs={'vars': ('var2',)},
+            encoding={'var1': {'dtype': 'int64', 'scale_factor': 0.0000001,
+                               '_FillValue': -9999}, },
+            var_attrs={'var1': {'long_name': 'test_var1', 'units': 'm'}},
+            glob_attrs={'test': 'test'}, var_fillvalues={'var2': -9999},
+            var_dtypes={'var2': 'int32'}, n_proc=2)
 
         assert len(os.listdir(os.path.join(path_out, '2020'))) == 28
         assert os.path.isfile(
@@ -208,7 +207,7 @@ def test_ts2img_no_collocation_integration():
                            'var2': {'long_name': 'test_var2', 'units': 'm'}},
                        glob_attrs={'test': 'test2'},
                        var_fillvalues={'var2': -9999},
-                       var_dtypes={'var2': 'int32'}, n_proc=1)
+                       var_dtypes={'var2': 'int32'}, n_proc=2)
 
         # all 10 files must exist, first two emtpy
         assert len(os.listdir(os.path.join(path_out, '2020'))) == 10
