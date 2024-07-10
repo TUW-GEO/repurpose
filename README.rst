@@ -32,18 +32,25 @@ without adpation.
 Installation
 ============
 
-This package depends on the following libraries that can be installed via
-conda or mamba
+This package requires `python>=3.9` and depends on the following libraries that
+can should installed with `conda <https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_
+or `mamba <https://github.com/conda-forge/miniforge>`_
 
 .. code::
 
     conda install -c conda-forge numpy netCDF4 pyresample
 
-Afterwards you can install this package and its pip dependencies via:
+Afterwards you can install this package and all remaining dependencies via:
 
 .. code::
 
     pip install repurpose
+
+Optional Dependencies
+---------------------
+Some packages are only needed to run unit tests and build docs of this package.
+They can be installed via ``pip install repurpose[testing]`` and/or
+``pip install repurpose[docs]``.
 
 Citation
 ========
