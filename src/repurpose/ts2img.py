@@ -84,6 +84,8 @@ def _write_img(
 
     image.close()
 
+    del image
+
 
 class Ts2Img:
 
@@ -528,7 +530,7 @@ class Ts2Img:
             verbose=False,
             loglevel=self.loglevel,
             ignore_errors=self.ignore_errors,
-            backend='threading',
+            backend='multiprocessing',
         )
 
         del ITER_KWARGS, STATIC_KWARGS, images, _
