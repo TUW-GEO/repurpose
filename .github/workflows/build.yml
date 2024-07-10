@@ -44,7 +44,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           #environment-file: environment.yml
           activate-environment: repurpose
-          mamba-version: "*"
+          #mamba-version: "*"
           auto-activate-base: false
       - name: Print environment infos
         shell: bash -l {0}
@@ -55,7 +55,7 @@ jobs:
       - name: Install package and run basic tests
         shell: bash -l {0}
         run: |
-          mamba install -c conda-forge xarray netCDF4 pyproj
+          conda install -c conda-forge xarray netCDF4 pyproj
           pip install -e .[testing]
           pytest
       - name: Install optional dependencies and run tests
