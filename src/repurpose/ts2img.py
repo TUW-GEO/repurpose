@@ -528,7 +528,12 @@ class Ts2Img:
             verbose=False,
             loglevel=self.loglevel,
             ignore_errors=self.ignore_errors,
+            backend='threading',
         )
 
         del ITER_KWARGS, STATIC_KWARGS, images, _
+
+    def __del__(self):
+        if self.stack is not None:
+            self.stack.close()
 

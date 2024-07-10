@@ -195,10 +195,12 @@ def test_ts2img_no_collocation_integration():
 
     _ = reader.read(15, 45)
     # second and last time stamp is missing for testing
-    converter = Ts2Img(reader, img_grid, timestamps=timestamps_image,
-                       max_dist=0, time_collocation=False)
+
 
     with tempfile.TemporaryDirectory() as path_out:
+        converter = Ts2Img(reader, img_grid, timestamps=timestamps_image,
+                           max_dist=0, time_collocation=False)
+
         converter.calc(path_out, format_out='slice',
                        preprocess=preprocess_func, postprocess=postprocess_func,
                        fn_template="test_{datetime}.nc", drop_empty=False,
@@ -276,4 +278,6 @@ def test_ts2img_no_collocation_integration():
         assert val == int(val_ts['var2'])
 
         ds.close()   # needed on Windows!
+
+        del converter
 
