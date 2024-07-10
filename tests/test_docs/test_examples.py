@@ -5,8 +5,7 @@ build correctly on readthedocs.
 """
 
 import os
-from nbconvert.preprocessors import ExecutePreprocessor
-import nbformat
+
 import pytest
 from repurpose.process import rootdir
 
@@ -20,8 +19,7 @@ examples_path = os.path.join(rootdir(), 'docs', 'examples')
     reason=f"Directory '{examples_path}' not found. "
            "The package is probably not installed in `editable` mode."
 )
-@pytest.mark.slow
-@pytest.mark.doc_example
+@pytest.mark.docs
 def test_ipython_notebook(notebook):
     """
     Run selected ipynb example files from docs/examples as tests.
@@ -29,6 +27,9 @@ def test_ipython_notebook(notebook):
     applicable to the tests here, this file must be within a sub-folder of
     the tests/ directory (assuming that examples are in docs/examples)!
     """
+    # imports in test because they are optional packages in optional tests
+    from nbconvert.preprocessors import ExecutePreprocessor
+    import nbformat
     preprocessor = ExecutePreprocessor(timeout=600, kernel_name="python3")
     with open(os.path.join(examples_path, notebook)) as f:
         # warning: from nbformat.validator import normalize

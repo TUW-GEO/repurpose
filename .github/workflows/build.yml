@@ -44,7 +44,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           #environment-file: environment.yml
           activate-environment: repurpose
-          #mamba-version: "*"
+          mamba-version: "*"
           auto-activate-base: false
       - name: Print environment infos
         shell: bash -l {0}
@@ -52,12 +52,17 @@ jobs:
           conda info -a
           which pip
           which python
-      - name: Install package and run tests
+      - name: Install package and run basic tests
         shell: bash -l {0}
         run: |
-          conda install -c conda-forge xarray netCDF4 pyproj
+          mamba install -c conda-forge xarray netCDF4 pyproj
           pip install -e .[testing]
           pytest
+      - name: Install optional dependencies and run tests
+        shell: bash -l {0}
+        run: |
+          pip install -e .[testing,docs]
+          pytest -m docs --cov-append
       - name: Export Environment
         shell: bash -l {0}
         run: |
@@ -80,7 +85,6 @@ jobs:
           then
             # build dist on linux
             python setup.py sdist --dist-dir .artifacts/dist
-            # build whls on windows
           fi
           pip install wheel
           python setup.py bdist_wheel --dist-dir .artifacts/dist
