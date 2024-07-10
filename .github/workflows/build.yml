@@ -55,7 +55,7 @@ jobs:
       - name: Install package and run tests
         shell: bash -l {0}
         run: |
-          mamba install -c conda-forge xarray netCDF4 pyproj
+          conda install -c conda-forge xarray netCDF4 pyproj
           pip install -e .[testing]
           pytest
       - name: Export Environment
