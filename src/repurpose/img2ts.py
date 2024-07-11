@@ -4,6 +4,7 @@ from pygeogrids.grids import CellGrid
 import repurpose.resample as resamp
 import numpy as np
 import os
+import time
 from datetime import datetime
 import logging
 import pygeogrids.netcdf as grid2nc
@@ -430,32 +431,40 @@ class Img2Ts:
 
         logger.info(f"Appending orthogonal time series chunk for cell {cell}")
 
-        with nc.OrthoMultiTs(
-                os.path.join(self.outputpath,
-                             self.filename_templ % cell),
-                n_loc=cell_gpis.size, mode='a',
-                zlib=self.zlib,
-                unlim_chunksize=self.unlim_chunksize,
-                time_units=self.time_units) as dataout:
+        while True:
+            try:
+                with nc.OrthoMultiTs(
+                        os.path.join(self.outputpath,
+                                     self.filename_templ % cell),
+                        n_loc=cell_gpis.size, mode='a',
+                        zlib=self.zlib,
+                        unlim_chunksize=self.unlim_chunksize,
+                        time_units=self.time_units) as dataout:
 
-            # add global attributes to file
-            if self.global_attr is not None:
-                for attr in self.global_attr:
+                    # add global attributes to file
+                    if self.global_attr is not None:
+                        for attr in self.global_attr:
+                            dataout.add_global_attr(
+                                attr, self.global_attr[attr])
+
                     dataout.add_global_attr(
-                        attr, self.global_attr[attr])
+                        'geospatial_lat_min', np.min(cell_lats))
+                    dataout.add_global_attr(
+                        'geospatial_lat_max', np.max(cell_lats))
+                    dataout.add_global_attr(
+                        'geospatial_lon_min', np.min(cell_lons))
+                    dataout.add_global_attr(
+                        'geospatial_lon_max', np.max(cell_lons))
 
-            dataout.add_global_attr(
-                'geospatial_lat_min', np.min(cell_lats))
-            dataout.add_global_attr(
-                'geospatial_lat_max', np.max(cell_lats))
-            dataout.add_global_attr(
-                'geospatial_lon_min', np.min(cell_lons))
-            dataout.add_global_attr(
-                'geospatial_lon_max', np.max(cell_lons))
+                    dataout.write_all(cell_gpis, celldata, timestamps,
+                                      lons=cell_lons, lats=cell_lats,
+                                      attributes=self.ts_attributes)
+                    break
+            except OSError:  # file probably used by some other process
+                logging.error(f"Could not write to file for cell {cell}. "
+                              f"Wait a bit and try again...")
+                time.sleep(3)
 
-            dataout.write_all(cell_gpis, celldata, timestamps,
-                              lons=cell_lons, lats=cell_lats,
-                              attributes=self.ts_attributes)
 
     def _write_non_orthogonal(self,
                               cell: int,
@@ -527,41 +536,49 @@ class Img2Ts:
 
         gpis, lons, lats = gpis[valid_mask], lons[valid_mask], lats[valid_mask]
 
-        with nc.IndexedRaggedTs(
-                fname,
-                n_loc=len(cell_gpis),  # no duplicates
-                mode='a',
-                zlib=self.zlib,
-                unlim_chunksize=self.unlim_chunksize,
-                time_units=self.time_units) as dataout:
+        while True:
+            try:
+                with nc.IndexedRaggedTs(
+                        fname,
+                        n_loc=len(cell_gpis),  # no duplicates
+                        mode='a',
+                        zlib=self.zlib,
+                        unlim_chunksize=self.unlim_chunksize,
+                        time_units=self.time_units) as dataout:
 
-            # add global attributes to file
-            if self.global_attr is not None:
-                for attr in self.global_attr:
+                    # add global attributes to file
+                    if self.global_attr is not None:
+                        for attr in self.global_attr:
+                            dataout.add_global_attr(
+                                attr, self.global_attr[attr])
+
                     dataout.add_global_attr(
-                        attr, self.global_attr[attr])
+                        'geospatial_lat_min', np.min(cell_lats))
+                    dataout.add_global_attr(
+                        'geospatial_lat_max', np.max(cell_lats))
+                    dataout.add_global_attr(
+                        'geospatial_lon_min', np.min(cell_lons))
+                    dataout.add_global_attr(
+                        'geospatial_lon_max', np.max(cell_lons))
 
-            dataout.add_global_attr(
-                'geospatial_lat_min', np.min(cell_lats))
-            dataout.add_global_attr(
-                'geospatial_lat_max', np.max(cell_lats))
-            dataout.add_global_attr(
-                'geospatial_lon_min', np.min(cell_lons))
-            dataout.add_global_attr(
-                'geospatial_lon_max', np.max(cell_lons))
+                    # var attr keys and celldata keys must match!
+                    if self.timekey is not None and self.ts_attributes is not None:
+                        if self.timekey in self.ts_attributes:
+                            _ = self.ts_attributes.pop(self.timekey)
 
-            # var attr keys and celldata keys must match!
-            if self.timekey is not None and self.ts_attributes is not None:
-                if self.timekey in self.ts_attributes:
-                    _ = self.ts_attributes.pop(self.timekey)
+                    dataout.write(gpis, celldata, gpi_time[valid_mask].filled(),
+                                  lon=lons, lat=lats,
+                                  attributes=self.ts_attributes,
+                                  dates_direct=True)
 
-            dataout.write(gpis, celldata, gpi_time[valid_mask].filled(),
-                          lon=lons, lat=lats,
-                          attributes=self.ts_attributes,
-                          dates_direct=True)
+                    logger.info(f"Non-Orthogonal time series chunk for cell {cell} "
+                                f"written.")
+                    break
+            except OSError:  # file probably used by some other process
+                logging.error(f"Could not write to file for cell {cell}. "
+                              f"Wait a bit and try again...")
+                time.sleep(3)
 
-            logger.info(f"Non-Orthogonal time series chunk for cell {cell} "
-                        f"written.")
 
     def calc(self):
         """

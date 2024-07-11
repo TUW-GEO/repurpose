@@ -29,6 +29,29 @@ The readers and writers have to conform to the API specifications of the base
 classes defined in `pygeobase <https://github.com/TUW-GEO/pygeobase>`_ to work
 without adpation.
 
+Installation
+============
+
+This package requires `python>=3.9` and depends on the following libraries that
+can should installed with `conda <https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_
+or `mamba <https://github.com/conda-forge/miniforge>`_
+
+.. code::
+
+    conda install -c conda-forge numpy netCDF4 pyresample
+
+Afterwards you can install this package and all remaining dependencies via:
+
+.. code::
+
+    pip install repurpose
+
+Optional Dependencies
+---------------------
+Some packages are only needed to run unit tests and build docs of this package.
+They can be installed via ``pip install repurpose[testing]`` and/or
+``pip install repurpose[docs]``.
+
 Citation
 ========
 
@@ -43,22 +66,6 @@ You should normally always use the DOI for the specific version of your record i
 This is to ensure that other researchers can access the exact research artefact you used for reproducibility.
 
 You can find additional information regarding DOI versioning at http://help.zenodo.org/#versioning
-
-Installation
-============
-
-This package depends on the following libraries that can be installed via
-conda or mamba
-
-.. code::
-
-    conda install -c conda-forge numpy netCDF4 pyresample
-
-Afterwards you can install this package and its pip dependecies via:
-
-.. code::
-
-    pip install repurpose
 
 
 Modules
