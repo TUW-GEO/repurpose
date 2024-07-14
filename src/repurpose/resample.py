@@ -220,6 +220,9 @@ def resample_to_grid(input_data, src_lon, src_lat, target_lon, target_lat,
                                                               min_neighbours=min_neighbours,
                                                               search_rad=search_rad,
                                                               neighbours=neighbours)
+
+    not_masked = ~mask
+
     for param in input_data:
         data = resampled_data[param]
         orig_data = input_data[param]
@@ -236,8 +239,8 @@ def resample_to_grid(input_data, src_lon, src_lat, target_lon, target_lat,
         else:
             output_array = np.zeros(target_lat.shape, dtype=orig_data.dtype)
             output_array = np.ma.array(output_array, mask=mask)
-        output_array[~mask] = data
 
+        output_array[not_masked] = data
         output_data[param] = output_array.reshape(output_shape)
 
     return output_data

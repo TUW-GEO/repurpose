@@ -320,6 +320,12 @@ class Img2Ts:
 
         try:
             image = self.imgin.read(date, **self.input_kwargs)
+
+            # if input grid is not set, use grid from image
+            # this makes sense if data/image is on a swath orbit grid
+            # and changing from image to image
+            if input_grid is None:
+                input_grid = image.grid
         except IOError as e:
             msg = "I/O error({0}): {1}".format(e.errno,
                                                e.strerror)
