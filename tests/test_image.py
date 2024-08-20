@@ -159,7 +159,7 @@ class TestRegularImageStackWithCollocation(unittest.TestCase):
         assert len(np.intersect1d(ts.index, self.writer.timestamps)) == 1
         self.writer.write_ts(
             ts, gpi=gpi, new_var_kwargs=dict(var1=dict(static=False),
-                var2=dict(static=False, values=-255, dtype='int8')))
+                var2=dict(static=False, values=-128, dtype='int8')))
 
         ds = self.writer.ds.sel(lon=lon, lat=lat, method='nearest')
         assert np.all(ds['var1'].values == ts['var1'].values)

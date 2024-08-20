@@ -1,8 +1,9 @@
-# Required conda packages (compare README).
+# Required CONDA packages (compare README).
 # All other (pip) packages are installed with pip
 # `pip install .`  or
 # `pip install .[testing]`  or
 # `pip install .[docs]`  or
+# `pip install repurpose`
 name: repurpose
 channels:
   - defaults
