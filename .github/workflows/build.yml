@@ -53,7 +53,7 @@ jobs:
       - name: Install package and run basic tests
         shell: bash -l {0}
         run: |
-          conda install -c defaults -c conda-forge xarray netCDF4 pyproj   # same as environment.yml
+          conda install -c defaults -c conda-forge xarray netCDF4 pyproj
           pip install -e .[testing]
           pytest
       - name: Install optional dependencies and run tests
@@ -129,4 +129,4 @@ jobs:
           verify_metadata: true
           packages_dir: Artifacts/dist/
           user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }} # this needs to be uploaded to github actions secrets
+          password: ${{ secrets.PYPI_API_TOKEN }}  # this needs to be uploaded to github actions secrets
