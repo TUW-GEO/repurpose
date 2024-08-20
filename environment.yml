@@ -6,8 +6,8 @@
 # `pip install repurpose`
 name: repurpose
 channels:
-  - conda-forge
   - defaults
+  - conda-forge
 dependencies:
   - xarray
   - netCDF4
