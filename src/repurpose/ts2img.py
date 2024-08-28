@@ -147,6 +147,9 @@ class Ts2Img:
     ignore_errors: bool, optional (default: False)
         Instead of raising an exception, log errors and continue the
         process. E.g. to skip individual corrupt files.
+    backend: str, optional (default: 'threading')
+        Which backend joblib should use. Default is 'threading',
+        other options are 'multiprocessing' and 'loky'
     """
 
     # Some variables are generated internally and cannot be used.
@@ -158,8 +161,9 @@ class Ts2Img:
     def __init__(self, ts_reader, img_grid, timestamps,
                  variables=None, read_function='read',
                  max_dist=18000, time_collocation=True, loglevel="WARNING",
-                 ignore_errors=False):
+                 ignore_errors=False, backend='threading'):
 
+        self.backend = backend
         self.ts_reader = ts_reader
         self.img_grid: CellGrid = Regular3dimImageStack._eval_grid(img_grid)
         self.timestamps = timestamps
@@ -243,7 +247,7 @@ class Ts2Img:
 
         stack = parallel_process_async(
             _convert, ITER_KWARGS, STATIC_KWARGS, n_proc=n_proc,
-            show_progress_bars=True, log_path=log_path, backend='threading',
+            show_progress_bars=True, log_path=log_path, backend=self.backend,
             verbose=False, ignore_errors=self.ignore_errors)
 
         stack = xr.combine_by_coords(stack)

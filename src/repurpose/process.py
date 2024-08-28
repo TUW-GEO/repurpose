@@ -272,6 +272,7 @@ def parallel_process_async(
         Defaults to "threading". See joblib docs for more info.
     sharedmem: bool, optional (default:True)
         Activate shared memory option (slow)
+        WARNING: Option not fully implemented / tested.
 
     Returns
     -------

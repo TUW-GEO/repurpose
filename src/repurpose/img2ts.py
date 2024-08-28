@@ -83,7 +83,7 @@ class Img2Ts:
                  r_neigh=8, r_fill_values=None, filename_templ='%04d.nc',
                  gridname='grid.nc', global_attr=None, ts_attributes=None,
                  ts_dtypes=None, time_units="days since 1858-11-17 00:00:00",
-                 zlib=True, n_proc=1, ignore_errors=False):
+                 zlib=True, n_proc=1, ignore_errors=False, backend='threading'):
         """
         Parameters
         ----------
@@ -194,8 +194,12 @@ class Img2Ts:
         ignore_errors: bool, optional (default: False)
             Instead of raising an exception, log errors and continue the
             process. E.g. to skip individual corrupt files.
+        backend: str, optional (default: 'threading')
+            Which backend joblib should use. Default is 'threading',
+            other options are 'multiprocessing' and 'loky'
         """
 
+        self.backend = backend
         self.imgin = input_dataset
         self.zlib = zlib
 
@@ -693,7 +697,7 @@ class Img2Ts:
                 ignore_errors=self.ignore_errors,
                 n_proc=self.n_proc,
                 show_progress_bars=False,
-                backend='threading'
+                backend=self.backend,
             )
 
             self.target_grid = target_grid
@@ -756,7 +760,7 @@ class Img2Ts:
                 logger_name='img2ts',
                 ignore_errors=self.ignore_errors,
                 n_proc=self.n_proc,
-                backend='threading'
+                backend=self.backend,
             )
 
             img_dict = {}
