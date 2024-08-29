@@ -1,5 +1,6 @@
 import time
 import os
+import warnings
 
 # Note: Must be set BEFORE the first numpy import!!
 os.environ['MKL_NUM_THREADS'] = '1'
@@ -197,7 +198,12 @@ def run_with_error_handling(FUNC,
             raise e
     return r
 
-def parallel_process_async(
+def parallel_process_async(*args, **kwargs):
+    warnings.warn("The 'parallel_process_async' method was renamed to"
+                  "`parallel_process`.", DeprecationWarning)
+    return parallel_process(*args, **kwargs)
+
+def parallel_process(
         FUNC,
         ITER_KWARGS,
         STATIC_KWARGS=None,
@@ -213,7 +219,7 @@ def parallel_process_async(
         progress_bar_label="Processed",
         backend="threading",
         sharedmem=False,
-        parallel_kwargs=None,
+        joblib_kwargs=None,
 ) -> list:
     """
     Applies the passed function to all elements of the passed iterables.
@@ -273,6 +279,8 @@ def parallel_process_async(
     sharedmem: bool, optional (default:True)
         Activate shared memory option (slow)
         WARNING: Option not fully implemented / tested.
+    joblib_kwargs: dict, optional (default: None)
+        Additional keyword arguments to pass to joblib.Parallel
 
     Returns
     -------
@@ -375,7 +383,7 @@ def parallel_process_async(
                 desc=progress_bar_label,
                 require='sharedmem' if sharedmem else None,
                 return_as="list",
-                **parallel_kwargs or dict(),
+                **joblib_kwargs or dict(),
             )(delayed(run_with_error_handling)(
                 FUNC, ignore_errors,
                 log_queue=q,
