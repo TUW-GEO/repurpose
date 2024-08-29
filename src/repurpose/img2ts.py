@@ -1,4 +1,4 @@
-from repurpose.process import parallel_process_async, idx_chunks
+from repurpose.process import parallel_process, idx_chunks
 import pynetcf.time_series as nc
 from pygeogrids.grids import CellGrid
 import repurpose.resample as resamp
@@ -686,7 +686,7 @@ class Img2Ts:
                 # time information is contained in `celldata`
                 FUNC = self._write_non_orthogonal
 
-            parallel_process_async(
+            parallel_process(
                 FUNC=FUNC,
                 ITER_KWARGS=ITER_KWARGS,
                 STATIC_KWARGS=STATIC_KWARGS,
@@ -748,7 +748,7 @@ class Img2Ts:
 
             ITER_KWARGS = {'date': dates}
 
-            results = parallel_process_async(
+            results = parallel_process(
                 self._read_image,
                 ITER_KWARGS=ITER_KWARGS,
                 STATIC_KWARGS={'target_grid': target_grid,

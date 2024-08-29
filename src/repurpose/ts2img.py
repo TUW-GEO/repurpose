@@ -1,4 +1,4 @@
-from repurpose.process import parallel_process_async, idx_chunks
+from repurpose.process import parallel_process, idx_chunks
 import logging
 import numpy as np
 import pandas as pd
@@ -245,7 +245,7 @@ class Ts2Img:
             ITER_KWARGS['lons'].append(lons)
             ITER_KWARGS['lats'].append(lats)
 
-        stack = parallel_process_async(
+        stack = parallel_process(
             _convert, ITER_KWARGS, STATIC_KWARGS, n_proc=n_proc,
             show_progress_bars=True, log_path=log_path, backend=self.backend,
             verbose=False, ignore_errors=self.ignore_errors)
@@ -525,7 +525,7 @@ class Ts2Img:
         STATIC_KWARGS = {'out_path': path_out, 'annual_folder': annual_folder,
                          'encoding': encoding}
 
-        _ = parallel_process_async(
+        _ = parallel_process(
             FUNC=_write_img,
             ITER_KWARGS=ITER_KWARGS,
             STATIC_KWARGS=STATIC_KWARGS,

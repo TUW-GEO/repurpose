@@ -5,7 +5,7 @@ import tempfile
 import logging
 import pytest
 
-from repurpose.process import parallel_process_async, idx_chunks
+from repurpose.process import parallel_process, idx_chunks
 
 def test_index_chunks():
     timestamps = pd.date_range('2020-07-01', '2020-07-09', freq='1D')
@@ -34,7 +34,7 @@ def test_apply_to_elements(n_proc, backend):
     iter_kwargs = {'x': [1, 2, 3, 4]}
     static_kwargs = {'p': 2}
     with tempfile.TemporaryDirectory() as log_path:
-        res = parallel_process_async(
+        res = parallel_process(
             func, iter_kwargs, static_kwargs, n_proc=int(n_proc),
             show_progress_bars=False, verbose=False, loglevel="DEBUG",
             ignore_errors=True, log_path=log_path, backend=backend)
