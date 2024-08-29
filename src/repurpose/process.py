@@ -199,7 +199,7 @@ def run_with_error_handling(FUNC,
     return r
 
 def parallel_process_async(*args, **kwargs):
-    warnings.warn("The 'parallel_process_async' method was renamed to"
+    warnings.warn("The 'parallel_process_async' method was renamed to "
                   "`parallel_process`.", DeprecationWarning)
     return parallel_process(*args, **kwargs)
 
