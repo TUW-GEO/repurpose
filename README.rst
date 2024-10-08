@@ -38,7 +38,7 @@ or `mamba <https://github.com/conda-forge/miniforge>`_
 
 .. code::
 
-    conda install -c conda-forge numpy netCDF4 pyresample
+    conda install -c conda-forge numpy netCDF4 pyresample pykdtree
 
 Afterwards you can install this package and all remaining dependencies via:
 

@@ -12,3 +12,4 @@ dependencies:
   - xarray
   - netCDF4
   - pyproj
+  - pykdtree

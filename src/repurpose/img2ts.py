@@ -457,6 +457,9 @@ class Img2Ts:
                             dataout.add_global_attr(
                                 attr, self.global_attr[attr])
 
+                    dataout.add_global_attr('timeSeries_format',
+                                            dataout.__class__.__name__)
+
                     dataout.add_global_attr(
                         'geospatial_lat_min', np.min(cell_lats))
                     dataout.add_global_attr(
@@ -561,6 +564,9 @@ class Img2Ts:
                         for attr in self.global_attr:
                             dataout.add_global_attr(
                                 attr, self.global_attr[attr])
+
+                    dataout.add_global_attr('timeSeries_format',
+                                            dataout.__class__.__name__)
 
                     dataout.add_global_attr(
                         'geospatial_lat_min', np.min(cell_lats))
@@ -685,6 +691,11 @@ class Img2Ts:
             else:
                 # time information is contained in `celldata`
                 FUNC = self._write_non_orthogonal
+
+            if self.global_attr is None:
+                self.global_attr = {}
+
+            self.global_attr['time_coverage_end'] = str(timestamps[-1])
 
             parallel_process(
                 FUNC=FUNC,
