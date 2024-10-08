@@ -46,6 +46,14 @@ Afterwards you can install this package and all remaining dependencies via:
 
     pip install repurpose
 
+
+On macOS if you get `ImportError: Pykdtree failed to import its C extension`,
+then it might be necessary to install the pykdtree package from conda-forge
+
+.. code::
+
+    conda install -c conda-forge pykdtree
+
 Optional Dependencies
 ---------------------
 Some packages are only needed to run unit tests and build docs of this package.

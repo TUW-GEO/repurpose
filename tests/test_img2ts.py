@@ -52,7 +52,7 @@ from repurpose.img2ts import Img2Ts
 # make a simple mock Dataset that can be used for testing the conversion
 
 
-class TestOrthogonalImageDataset(ImageBase):
+class SomeOrthogonalImageDataset(ImageBase):
 
     def read(self, timestamp=None):
 
@@ -76,7 +76,7 @@ class TestOrthogonalImageDataset(ImageBase):
         pass
 
 
-class TestNonOrthogonalImageDataset(ImageBase):
+class SomeNonOrthogonalImageDataset(ImageBase):
 
     def read(self, timestamp=None):
 
@@ -105,10 +105,10 @@ class TestNonOrthogonalImageDataset(ImageBase):
         pass
 
 
-class TestMultiTemporalImageDatasetDaily(MultiTemporalImageBase):
+class SomeMultiTemporalImageDatasetDaily(MultiTemporalImageBase):
 
-    def __init__(self, cls=TestOrthogonalImageDataset):
-        super(TestMultiTemporalImageDatasetDaily,
+    def __init__(self, cls=SomeOrthogonalImageDataset):
+        super(SomeMultiTemporalImageDatasetDaily,
               self).__init__("", cls)
 
     def tstamps_for_daterange(self, start_date, end_date):
@@ -153,8 +153,8 @@ def test_img2ts_nonortho_daily_no_resampling():
         start = datetime(2014, 2, 5)
         end = datetime(2014, 4, 21)
 
-        ds_in = TestMultiTemporalImageDatasetDaily(
-            TestNonOrthogonalImageDataset)
+        ds_in = SomeMultiTemporalImageDatasetDaily(
+            SomeNonOrthogonalImageDataset)
 
         img2ts = Img2Ts(ds_in,
                         outputpath, start, end, imgbuffer=10,
@@ -196,7 +196,9 @@ def test_img2ts_nonortho_daily_no_resampling():
             ds.close()
 
         ds = xr.open_dataset(os.path.join(outputpath, '0000.nc'))
-
+        assert ds.attrs['time_coverage_end'] == '2014-04-21 00:00:00'
+        assert ds.attrs['timeSeries_format'] == 'IndexedRaggedTs'
+        
         np.testing.assert_array_equal(ds['location_id'].data,
                                       np.array([0]))
         np.testing.assert_array_equal(ds['lat'].data,
@@ -220,8 +222,8 @@ def test_img2ts_nonortho_daily_resampling():
         start = datetime(2014, 2, 5)
         end = datetime(2014, 4, 21)
 
-        ds_in = TestMultiTemporalImageDatasetDaily(
-            TestNonOrthogonalImageDataset)
+        ds_in = SomeMultiTemporalImageDatasetDaily(
+            SomeNonOrthogonalImageDataset)
 
         img2ts = Img2Ts(ds_in, outputpath, start, end, imgbuffer=20,
                         target_grid=target_grid, input_grid=input_grid,
@@ -248,7 +250,9 @@ def test_img2ts_nonortho_daily_resampling():
         ds_in.close()
 
         ds = xr.open_dataset(os.path.join(outputpath, '0003.nc'))
-
+        assert ds.attrs['time_coverage_end'] == '2014-04-21 00:00:00'
+        assert ds.attrs['timeSeries_format'] == 'IndexedRaggedTs'
+        
         np.testing.assert_array_equal(ds['location_id'].data,
                                       np.array([1, 5]))
 
@@ -268,8 +272,8 @@ def test_img2ts_ortho_daily_no_resampling():
         start = datetime(2014, 2, 5)
         end = datetime(2014, 4, 21)
 
-        ds_in = TestMultiTemporalImageDatasetDaily(
-            cls=TestOrthogonalImageDataset)
+        ds_in = SomeMultiTemporalImageDatasetDaily(
+            cls=SomeOrthogonalImageDataset)
         img2ts = Img2Ts(ds_in, outputpath, start, end, imgbuffer=20,
                         input_grid=input_grid, n_proc=2,
                         cellsize_lat=180, cellsize_lon=360)
@@ -287,6 +291,9 @@ def test_img2ts_ortho_daily_no_resampling():
         ts = ds.read(0)
         assert np.all(dates_should == ts.index)
 
+        ds.close()
+        ds_in.close()
+        
         with OrthoMultiTs(ts_file) as ds:
             ts = ds.read('var1', 0)
             nptest.assert_allclose(ts['var1'], ts_should_gpi0)
@@ -296,8 +303,12 @@ def test_img2ts_ortho_daily_no_resampling():
                                    np.array([0, 1, 2, 3]))
             ds.close()
 
+        ds = xr.open_dataset(ts_file)
+        assert ds.attrs['timeSeries_format'] == 'OrthoMultiTs'
+        assert ds.attrs['time_coverage_end'] == '2014-04-21 00:00:00'
         ds.close()
-        ds_in.close()
+
+
 
 def test_img2ts_ortho_daily_resampling():
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
@@ -311,8 +322,8 @@ def test_img2ts_ortho_daily_resampling():
         start = datetime(2014, 2, 5)
         end = datetime(2014, 4, 21)
 
-        ds_in = TestMultiTemporalImageDatasetDaily(
-            cls=TestOrthogonalImageDataset)
+        ds_in = SomeMultiTemporalImageDatasetDaily(
+            cls=SomeOrthogonalImageDataset)
         img2ts = Img2Ts(ds_in, outputpath, start, end, imgbuffer=20,
                         target_grid=target_grid, cellsize_lon=360,
                         cellsize_lat=180,
@@ -337,6 +348,9 @@ def test_img2ts_ortho_daily_resampling():
 
         ds = xr.open_dataset(os.path.join(outputpath, '0000.nc'))
 
+        assert ds.attrs['timeSeries_format'] == 'OrthoMultiTs'
+        assert ds.attrs['time_coverage_end'] == '2014-04-21 00:00:00'
+
         np.testing.assert_array_equal(ds['location_id'].data,
                                       np.array([0, 1, 2, 3]))
 
@@ -359,7 +373,7 @@ def test_img2ts_ortho_daily_no_resampling_missing_day():
         start = datetime(2015, 12, 5)
         end = datetime(2016, 1, 10)
 
-        ds_in = TestMultiTemporalImageDatasetDaily(TestOrthogonalImageDataset)
+        ds_in = SomeMultiTemporalImageDatasetDaily(SomeOrthogonalImageDataset)
         img2ts = Img2Ts(ds_in,
                         outputpath, start, end, imgbuffer=15,
                         cellsize_lat=180, cellsize_lon=360,
@@ -379,3 +393,8 @@ def test_img2ts_ortho_daily_no_resampling_missing_day():
             np.all(dates_should == pd.DatetimeIndex(ts['time']))
             nptest.assert_allclose(ds.dataset.variables['location_id'][:],
                                    np.array([0, 1, 2, 3]))
+
+        ds = xr.open_dataset(ts_file)
+        assert ds.attrs['timeSeries_format'] == 'OrthoMultiTs'
+        assert ds.attrs['time_coverage_end'] == '2016-01-10 00:00:00'
+        ds.close()
