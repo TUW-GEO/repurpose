@@ -4,8 +4,10 @@ Changelog
 
 Unreleased changes in master branch
 ===================================
--
-
+- PynetCF time series type (OrthoMultiTs or IndexedRaggedTs) are now stored in
+the global `timeSeries_format` attribute.
+- `time_coverage_end` global attribute added to each time series file, this is
+updated when appending data to an existing file.
 
 Version 0.12
 ============
