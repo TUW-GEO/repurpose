@@ -54,6 +54,10 @@ jobs:
         shell: bash -l {0}
         run: |
           conda install -c defaults -c conda-forge xarray netCDF4 pyproj
+          if [ ${{ matrix.os }} == "macos-latest" ] 
+          then
+            conda install -c conda-forge pykdtree
+          fi
           pip install -e .[testing]
           pytest
       - name: Install optional dependencies and run tests

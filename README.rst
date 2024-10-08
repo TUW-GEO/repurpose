@@ -38,13 +38,21 @@ or `mamba <https://github.com/conda-forge/miniforge>`_
 
 .. code::
 
-    conda install -c conda-forge numpy netCDF4 pyresample pykdtree
+    conda install -c conda-forge numpy netCDF4 pyresample
 
 Afterwards you can install this package and all remaining dependencies via:
 
 .. code::
 
     pip install repurpose
+
+
+On macOS if you get `ImportError: Pykdtree failed to import its C extension`,
+then it might be necessary to install the pykdtree package from conda-forge
+
+.. code::
+
+    conda install -c conda-forge pykdtree
 
 Optional Dependencies
 ---------------------
