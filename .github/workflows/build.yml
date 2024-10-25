@@ -4,7 +4,7 @@
 # For more information see:
 # https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Automated Tests
+name: CI/CD
 
 on:
   push:
@@ -82,7 +82,7 @@ jobs:
       - name: Create wheel and dist package
         shell: bash -l {0}
         run: |
-          pip install setuptools_scm
+          pip install setuptools_scm twine
           if [ ${{ matrix.os }} == "ubuntu-latest" ]
           then
             # build dist on linux
@@ -91,11 +91,13 @@ jobs:
           pip install wheel
           python setup.py bdist_wheel --dist-dir artifacts/dist
           ls artifacts/dist
+          twine check artifacts/dist/*
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Artifacts-${{ matrix.python-version }}-${{ matrix.os }}
           path: artifacts/*
+
   coveralls:
     name: Submit Coveralls 👚
     needs: build
@@ -107,6 +109,7 @@ jobs:
           pip3 install --upgrade coveralls && coveralls --service=github --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   publish:
     name: Upload to PyPI 🚀
     if: startsWith(github.ref, 'refs/tags/v') && startsWith(github.repository, 'TUW-GEO')
