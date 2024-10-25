@@ -33,7 +33,7 @@ Installation
 ============
 
 This package requires `python>=3.9` and depends on the following libraries that
-can should installed with `conda <https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_
+should be installed with `conda <https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_
 or `mamba <https://github.com/conda-forge/miniforge>`_
 
 .. code::
@@ -69,17 +69,10 @@ Citation
 If you use the software in a publication then please cite it using the Zenodo DOI.
 Be aware that this badge links to the latest package version.
 
-Please select your specific version at https://doi.org/10.5281/zenodo.593577 to get the DOI of that version.
-You should normally always use the DOI for the specific version of your record in citations.
-This is to ensure that other researchers can access the exact research artefact you used for reproducibility.
-
-You can find additional information regarding DOI versioning at http://help.zenodo.org/#versioning
-
-
 Modules
 =======
 
-It includes two main modules:
+It includes the main modules:
 
 - ``img2ts`` for image/swath to time series conversion, including support for
   spatial resampling.
@@ -94,9 +87,6 @@ Alternatives
 If you have data that can be represented as a 3D datacube then these projects
 might be better suited to your needs.
 
-- `PyReshaper <https://github.com/NCAR/PyReshaper>`_ is a package that works
-  with NetCDF input and output and converts time slices into a time series
-  representation.
 - `Climate Data Operators (CDO)
   <https://code.zmaw.de/projects/cdo/embedded/index.html>`_ can work with
   several input formats, stack them and change the chunking to allow time series
@@ -104,6 +94,8 @@ might be better suited to your needs.
   know.
 - `netCDF Operators (NCO) <http://nco.sourceforge.net/#Definition>`_ are similar
   to CDO with a stronger focus on netCDF.
+- `xarray <https://docs.xarray.dev/en/stable/>`_ can read, restructure, write
+  netcdf data as datacubes and apply functions across dimensions.
 
 Contribute
 ==========
@@ -111,12 +103,6 @@ Contribute
 We are happy if you want to contribute. Please raise an issue explaining what
 is missing or if you find a bug. We will also gladly accept pull requests
 against our master branch for new features or bug fixes.
-
-Development setup
------------------
-
-For Development we recommend a ``conda`` environment with all packages listed
-in `environment.yml`.
 
 Guidelines
 ----------
@@ -129,9 +115,3 @@ If you want to contribute please follow these steps:
 - Please include tests for your contributions in one of the test directories.
   We use py.test so a simple function called test_my_feature is enough
 - submit a pull request to our master branch
-
-Note
-====
-
-This project has been set up using PyScaffold 2.4.4. For details and usage
-information on PyScaffold see http://pyscaffold.readthedocs.org/.
