@@ -695,7 +695,11 @@ class Img2Ts:
             if self.global_attr is None:
                 self.global_attr = {}
 
-            self.global_attr['time_coverage_end'] = str(timestamps[-1])
+            try:
+                self.global_attr['time_coverage_end'] = str(timestamps[-1])
+            except IndexError:  # this can be the case if a whole bulk is empty
+                warnings.warn("Could not infer time coverage from files")
+                self.global_attr['time_coverage_end'] = "unknown"
 
             parallel_process(
                 FUNC=FUNC,
@@ -703,7 +707,7 @@ class Img2Ts:
                 STATIC_KWARGS=STATIC_KWARGS,
                 log_path=os.path.join(self.outputpath, '000_log'),
                 log_filename=self.log_filename,
-                loglevel="INFO",
+                loglevel="WARNING",
                 logger_name='img2ts',
                 ignore_errors=self.ignore_errors,
                 n_proc=self.n_proc,
@@ -777,7 +781,7 @@ class Img2Ts:
             img_dict = {}
             timestamps = np.array([])
 
-            while len(results) > 0:
+            while (results is not None) and len(results) > 0:
                 img, orthogonal = results.pop(0)
 
                 for k, v in img.data.items():
