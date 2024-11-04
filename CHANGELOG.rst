@@ -4,6 +4,12 @@ Changelog
 
 Unreleased changes in master branch
 ===================================
+-
+
+Version 0.13.1
+==============
+- Img2Ts now logs only errors and warnings
+- Handled an edge case where Img2Ts failed when a whole set of images was missing
 
 Version 0.13
 ============
