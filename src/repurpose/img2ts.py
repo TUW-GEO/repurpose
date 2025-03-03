@@ -58,7 +58,6 @@ def is_subset_grid(grid, other, compare_index=False, compare_cell=False):
     return True
 
 
-
 class Img2Ts:
     """
     class that uses the read_img iterator of the input_data dataset
@@ -83,7 +82,7 @@ class Img2Ts:
                  r_neigh=8, r_fill_values=None, filename_templ='%04d.nc',
                  gridname='grid.nc', global_attr=None, ts_attributes=None,
                  ts_dtypes=None, time_units="days since 1858-11-17 00:00:00",
-                 zlib=True, n_proc=1, ignore_errors=False, backend='threading'):
+                 zlib=True, n_proc=1, ignore_errors=False, backend='threading', exclude_missing_time_stamps = True, overpass='AM', elements_per_folders=None):
         """
         Parameters
         ----------
@@ -202,6 +201,8 @@ class Img2Ts:
         self.backend = backend
         self.imgin = input_dataset
         self.zlib = zlib
+        self.exclude_missing_time_stamps = exclude_missing_time_stamps
+        self.overpass = overpass
 
         if (input_grid is None) and hasattr(self.imgin, 'grid'):
             input_grid = self.imgin.grid
@@ -256,7 +257,7 @@ class Img2Ts:
         self.variable_rename = variable_rename
         self.unlim_chunksize = unlim_chunksize
         self.gridname = gridname
-
+        self.elements_per_folders = elements_per_folders
         self.r_methods = r_methods
         self.r_weightf = r_weightf
         self.r_min_n = r_min_n
@@ -283,6 +284,7 @@ class Img2Ts:
 
         self.log_filename = \
             f"img2ts_{datetime.now().strftime('%Y%m%d%H%M')}.log"
+
 
     def _read_image(self, date, input_grid, target_grid):
         """
@@ -582,7 +584,29 @@ class Img2Ts:
                         if self.timekey in self.ts_attributes:
                             _ = self.ts_attributes.pop(self.timekey)
 
-                    dataout.write(gpis, celldata, gpi_time[valid_mask].filled(),
+                    if self.exclude_missing_time_stamps:
+                        time_id = np.where(gpi_time[valid_mask].filled() == -9999.)[0]
+                        df_celldata = pd.DataFrame.from_dict(celldata)
+                        df_celldata.drop(index=time_id, inplace=True)
+                        gpis = np.delete(gpis, time_id)
+                        lons = np.delete(lons, time_id)
+                        lats = np.delete(lats, time_id)
+                        time_array = np.delete(gpi_time[valid_mask].filled(), time_id)
+                        celldata = {col: df_celldata[col].to_numpy() for col in df_celldata.columns}
+                    else:
+                        time_array = gpi_time[valid_mask].filled()
+
+
+
+
+
+                    d = 1
+
+                    # dataout.write(gpis, celldata, gpi_time[valid_mask].filled(),
+                    #               lon=lons, lat=lats,
+                    #               attributes=self.ts_attributes,
+                    #               dates_direct=True)
+                    dataout.write(gpis, celldata, time_array,
                                   lon=lons, lat=lats,
                                   attributes=self.ts_attributes,
                                   dates_direct=True)
@@ -724,6 +748,12 @@ class Img2Ts:
             logger.info(f"Chunk processed in "
                         f"{datetime.now() - start_time} Seconds")
 
+    # def create_multiple_copies_for_timestamps(self, list2):
+    #     result = []
+    #     for i in range(len(list2)):
+    #         result.extend([list2[i]*self.elements_per_folders[i]])  # Repeat the timestamp list2[i] times
+    #     return result
+
     def img_bulk(self):
         """
         Yields numpy array of images from imgbuffer between start and enddate
@@ -752,6 +782,17 @@ class Img2Ts:
         timestamps = self.imgin.tstamps_for_daterange(
             self.startdate, self.enddate)
 
+        element_per_folder_multipliers = []
+        for i in range(len(timestamps)):
+            # if self.elements_per_folders[i] == 4:
+            #     d = 2
+            element_per_folder_multipliers.extend([timestamps[i]] * self.elements_per_folders[i])
+        timestamps = element_per_folder_multipliers
+
+        # if self.overpass == 'BOTH':
+        #     timestamps = [item for item in timestamps for _ in range(2)]
+        # else:
+        #     pass
         for i, dates in enumerate(idx_chunks(pd.DatetimeIndex(timestamps),
                                              self.imgbuffer)):
 
@@ -762,7 +803,6 @@ class Img2Ts:
             self.input_grid = None
 
             ITER_KWARGS = {'date': dates}
-
             results = parallel_process(
                 self._read_image,
                 ITER_KWARGS=ITER_KWARGS,
@@ -807,3 +847,4 @@ class Img2Ts:
             self.input_grid = input_grid
 
             yield (img_dict, timestamps)
+
