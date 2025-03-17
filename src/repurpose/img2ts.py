@@ -12,8 +12,10 @@ import pandas as pd
 from pygeobase.object_base import Image
 import warnings
 
+
 class Img2TsError(Exception):
     pass
+
 
 def is_subset_grid(grid, other, compare_index=False, compare_cell=False):
     """
@@ -50,7 +52,7 @@ def is_subset_grid(grid, other, compare_index=False, compare_cell=False):
                 return False
         if compare_cell:
             if (not isinstance(grid, CellGrid)) or \
-               (not isinstance(other, CellGrid)):
+                    (not isinstance(other, CellGrid)):
                 raise IOError("Both grids must be of of type `CellGrid`")
             if not np.array_equal(grid.activearrcell, other.activearrcell):
                 return False
@@ -82,12 +84,14 @@ class Img2Ts:
                  r_neigh=8, r_fill_values=None, filename_templ='%04d.nc',
                  gridname='grid.nc', global_attr=None, ts_attributes=None,
                  ts_dtypes=None, time_units="days since 1858-11-17 00:00:00",
-                 zlib=True, n_proc=1, ignore_errors=False, backend='threading', exclude_missing_time_stamps = True, overpass='AM', elements_per_folders=None):
+                 zlib=True, n_proc=1, ignore_errors=False, backend='threading',
+                 overpass='AM'):
         """
         Parameters
         ----------
         input_dataset : DatasetImgBase like class instance
-            must implement a ``read(date, **input_kwargs)`` iterator that returns a
+            must implement a ``read(date, **input_kwargs)`` iterator that
+            returns a
             `pygeobase.object_base.Image` object that contains the data loaded
             from the netcdf file.
         outputpath : str
@@ -112,27 +116,34 @@ class Img2Ts:
             the grid on which the time series will be stored.
             If not given then the grid of the input dataset will be used
         imgbuffer : int, optional
-            number of days worth of images that should be read into memory before
+            number of days worth of images that should be read into memory
+            before
             a time series is written. This parameter should be chosen so that
-            the memory of your machine is utilized. It depends on the daily data
+            the memory of your machine is utilized. It depends on the daily
+            data
             volume of the input dataset. If -1 is passed, all available
             data will be loaded at once (no buffer).
         variable_rename : dict, optional
             if the variables should have other names than the names that are
-            returned as keys in the dict by the daily_images iterator. A dictionary
+            returned as keys in the dict by the daily_images iterator. A
+            dictionary
             can be provided that changes these names for the time series.
         unlim_chunksize : int, optional
             netCDF chunksize for unlimited variables.
         cellsize_lat : float, optional (default: None)
             if outgrid or input_data.grid are not cell grids then the cellsize
             in latitude direction must be specified here. Consider e.g. 5 deg
-            cells as shown here for a grid with the origin in the bottom left corner:
-            https://gldas.readthedocs.io/en/latest/_images/5x5_cell_partitioning.png
+            cells as shown here for a grid with the origin in the bottom
+            left corner:
+            https://gldas.readthedocs.io/en/latest/_images
+            /5x5_cell_partitioning.png
         cellsize_lon : float, optional (default: None)
             if outgrid or input_data.grid are not cell grids then the cellsize
             in longitude direction must be specified here. Consider e.g. 5 deg
-            cells as shown here for a grid with the origin in the bottom left corner:
-            https://gldas.readthedocs.io/en/latest/_images/5x5_cell_partitioning.png
+            cells as shown here for a grid with the origin in the bottom
+            left corner:
+            https://gldas.readthedocs.io/en/latest/_images
+            /5x5_cell_partitioning.png
         r_methods : string or dict, optional
             resample methods to use if resampling is necessary, either 'nn' for
             nearest neighbour or 'custom' for custom weight function.
@@ -140,20 +151,26 @@ class Img2Ts:
             variable
         r_weightf : function or dict, optional
             if r_methods is custom this function will be used to calculate the
-            weights depending on distance. This can also be a dict with a separate
+            weights depending on distance. This can also be a dict with a
+            separate
             weight function for each variable.
         r_min_n : int, optional
-            Minimum number of neighbours on the target_grid that are required for
+            Minimum number of neighbours on the target_grid that are
+            required for
             a point to be resampled.
         r_radius : float, optional
-            resample radius in which neighbours should be searched given in meters
+            resample radius in which neighbours should be searched given in
+            meters
         r_neigh : int, optional
             maximum number of neighbours found inside r_radius to use during
-            resampling. If more are found the r_neigh closest neighbours will be
+            resampling. If more are found the r_neigh closest neighbours
+            will be
             used.
         r_fill_values : number or dict, optional
-            if given the resampled output array will be filled with this value if
-            no valid resampled value could be computed, if not a masked array will
+            if given the resampled output array will be filled with this
+            value if
+            no valid resampled value could be computed, if not a masked
+            array will
             be returned can also be a dict with a fill value for each variable
         filename_templ : string, optional
             filename template must be a string with a string formatter for the
@@ -165,21 +182,25 @@ class Img2Ts:
         global_attr : dict, optional
             global attributes for each file
         ts_attributes : dict, optional
-            dictionary of attributes that should be set for the netCDF time series.
+            dictionary of attributes that should be set for the netCDF time
+            series.
             Can be either a dictionary of attributes that will be set for all
             variables in input_data or a dictionary of dictionaries.
             In the second case the first dictionary has to have a key for each
-            variable returned by input_data and the second level dictionary will be
+            variable returned by input_data and the second level dictionary
+            will be
             the dictionary of attributes for this time series.
         ts_dtype : numpy.dtype or dict of numpy.dtypes
-            data type to use for the time series, if it is a dict then a key must
+            data type to use for the time series, if it is a dict then a key
+            must
             exist for each variable returned by input_data.
             Default : None, no change from input data
         time_units : string, optional
             units the time axis is given in.
             Default: "days since  1858-11-17 00:00:00" which is modified julian
             date for regular images this can be set freely since the conversion
-            is done automatically, for images with irregular timestamp this will
+            is done automatically, for images with irregular timestamp this
+            will
             be ignored for now
         zlib: boolean, optional (default: True)
             if True the saved netCDF files will be compressed
@@ -187,7 +208,8 @@ class Img2Ts:
         n_proc: int, optional (default: 1)
             Number of parallel processes. Multiprocessing is only used when
             `n_proc` > 1. Applies to data reading and writing. Should be chosen
-            according to the file connection. A slow connection might be overloaded
+            according to the file connection. A slow connection might be
+            overloaded
             by too many processes trying to read data (e.g. network).
             If unsure, better leave this at 1.
         ignore_errors: bool, optional (default: False)
@@ -196,12 +218,13 @@ class Img2Ts:
         backend: str, optional (default: 'threading')
             Which backend joblib should use. Default is 'threading',
             other options are 'multiprocessing' and 'loky'
+        overpass: string, optional
+        Specify AM, PM, or BOTH, depending on the dataset overpass type.
         """
 
         self.backend = backend
         self.imgin = input_dataset
         self.zlib = zlib
-        self.exclude_missing_time_stamps = exclude_missing_time_stamps
         self.overpass = overpass
 
         if (input_grid is None) and hasattr(self.imgin, 'grid'):
@@ -240,7 +263,8 @@ class Img2Ts:
               hasattr(self.target_grid, 'activearrcell') and
               (self.input_grid == self.target_grid)):
             self.resample = False
-        elif is_subset_grid(self.input_grid, self.target_grid, compare_index=True):
+        elif is_subset_grid(self.input_grid, self.target_grid,
+                            compare_index=True):
             # even if grids are the same, but GPI order is different, resample
             self.resample = False
         else:
@@ -257,7 +281,6 @@ class Img2Ts:
         self.variable_rename = variable_rename
         self.unlim_chunksize = unlim_chunksize
         self.gridname = gridname
-        self.elements_per_folders = elements_per_folders
         self.r_methods = r_methods
         self.r_weightf = r_weightf
         self.r_min_n = r_min_n
@@ -284,7 +307,6 @@ class Img2Ts:
 
         self.log_filename = \
             f"img2ts_{datetime.now().strftime('%Y%m%d%H%M')}.log"
-
 
     def _read_image(self, date, input_grid, target_grid):
         """
@@ -372,7 +394,8 @@ class Img2Ts:
             metadata = image.metadata
             metadata["subsetting_date"] = f"{datetime.now()}"
 
-            idx = np.where(np.isin(input_grid.activegpis, target_grid.activegpis))
+            idx = np.where(
+                np.isin(input_grid.activegpis, target_grid.activegpis))
             image = Image(target_grid.activearrlon,
                           target_grid.activearrlat,
                           data={k: v[idx] for k, v in image.data.items()},
@@ -480,7 +503,6 @@ class Img2Ts:
                               f"Wait a bit and try again...")
                 time.sleep(3)
 
-
     def _write_non_orthogonal(self,
                               cell: int,
                               cell_gpis: np.ndarray,
@@ -546,20 +568,21 @@ class Img2Ts:
             # drop data where time stamps are NaN
             valid_mask = np.isfinite(gpi_time)
 
-        celldata = {k: v.flatten()[valid_mask].filled() for k, v in celldata.items()
+        celldata = {k: v.flatten()[valid_mask].filled() for k, v in
+                    celldata.items()
                     if k != self.timekey}
 
         gpis, lons, lats = gpis[valid_mask], lons[valid_mask], lats[valid_mask]
 
         while True:
             try:
-                with nc.IndexedRaggedTs(
+                with (nc.IndexedRaggedTs(
                         fname,
                         n_loc=len(cell_gpis),  # no duplicates
                         mode='a',
                         zlib=self.zlib,
                         unlim_chunksize=self.unlim_chunksize,
-                        time_units=self.time_units) as dataout:
+                        time_units=self.time_units) as dataout):
 
                     # add global attributes to file
                     if self.global_attr is not None:
@@ -584,41 +607,40 @@ class Img2Ts:
                         if self.timekey in self.ts_attributes:
                             _ = self.ts_attributes.pop(self.timekey)
 
-                    if self.exclude_missing_time_stamps:
-                        time_id = np.where(gpi_time[valid_mask].filled() == -9999.)[0]
-                        df_celldata = pd.DataFrame.from_dict(celldata)
-                        df_celldata.drop(index=time_id, inplace=True)
-                        gpis = np.delete(gpis, time_id)
-                        lons = np.delete(lons, time_id)
-                        lats = np.delete(lats, time_id)
-                        time_array = np.delete(gpi_time[valid_mask].filled(), time_id)
-                        celldata = {col: df_celldata[col].to_numpy() for col in df_celldata.columns}
-                    else:
-                        time_array = gpi_time[valid_mask].filled()
+                    invalid_values = [np.nan, -9999, -9999.0, '', None]
+                    time_id = np.where(np.isin(gpi_time[valid_mask].filled(),
+                                               invalid_values))[0]
 
+                    # Step 2: Remove these indices from the arrays
+                    gpis = np.delete(gpis, time_id)
+                    lons = np.delete(lons, time_id)
+                    lats = np.delete(lats, time_id)
+                    time_array = np.delete(gpi_time[valid_mask].filled(),
+                                           time_id)
 
+                    # Step 3: Construct celldata dictionary using numpy or
+                    # lists
+                    for col in list(
+                            celldata.keys()):  # Assuming you have a list of
+                        # column names like 'col1', 'col2', etc.
+                        col_data = celldata[
+                            col]  # Assuming celldata_dict is a dictionary
+                        # of columns in lists/arrays
+                        celldata[col] = np.delete(col_data, time_id)
 
-
-
-                    d = 1
-
-                    # dataout.write(gpis, celldata, gpi_time[valid_mask].filled(),
-                    #               lon=lons, lat=lats,
-                    #               attributes=self.ts_attributes,
-                    #               dates_direct=True)
                     dataout.write(gpis, celldata, time_array,
                                   lon=lons, lat=lats,
                                   attributes=self.ts_attributes,
                                   dates_direct=True)
 
-                    logger.info(f"Non-Orthogonal time series chunk for cell {cell} "
-                                f"written.")
+                    logger.info(
+                        f"Non-Orthogonal time series chunk for cell {cell} "
+                        f"written.")
                     break
             except OSError:  # file probably used by some other process
                 logging.error(f"Could not write to file for cell {cell}. "
                               f"Wait a bit and try again...")
                 time.sleep(3)
-
 
     def calc(self):
         """
@@ -632,7 +654,8 @@ class Img2Ts:
 
         for img_stack_dict, timestamps in self.img_bulk():
             # =================================================================
-            logging.info(f"Finished reading bulk with {len(timestamps)} images")
+            logging.info(
+                f"Finished reading bulk with {len(timestamps)} images")
 
             start_time = datetime.now()
 
@@ -654,7 +677,7 @@ class Img2Ts:
 
             keys = list(img_stack_dict.keys())
             for key in keys:
-                #print(key)
+                # print(key)
                 # rename variable in output dataset
                 if self.variable_rename is None:
                     var_new_name = str(key)
@@ -705,8 +728,10 @@ class Img2Ts:
             del img_stack_dict
 
             ITER_KWARGS['cell_gpis'] = np.split(_grid.activegpis, indices)[1:]
-            ITER_KWARGS['cell_lons'] = np.split(_grid.activearrlon, indices)[1:]
-            ITER_KWARGS['cell_lats'] = np.split(_grid.activearrlat, indices)[1:]
+            ITER_KWARGS['cell_lons'] = np.split(_grid.activearrlon, indices)[
+                                       1:]
+            ITER_KWARGS['cell_lats'] = np.split(_grid.activearrlat, indices)[
+                                       1:]
 
             STATIC_KWARGS = {}
             if self.orthogonal:
@@ -748,12 +773,6 @@ class Img2Ts:
             logger.info(f"Chunk processed in "
                         f"{datetime.now() - start_time} Seconds")
 
-    # def create_multiple_copies_for_timestamps(self, list2):
-    #     result = []
-    #     for i in range(len(list2)):
-    #         result.extend([list2[i]*self.elements_per_folders[i]])  # Repeat the timestamp list2[i] times
-    #     return result
-
     def img_bulk(self):
         """
         Yields numpy array of images from imgbuffer between start and enddate
@@ -782,17 +801,10 @@ class Img2Ts:
         timestamps = self.imgin.tstamps_for_daterange(
             self.startdate, self.enddate)
 
-        element_per_folder_multipliers = []
-        for i in range(len(timestamps)):
-            # if self.elements_per_folders[i] == 4:
-            #     d = 2
-            element_per_folder_multipliers.extend([timestamps[i]] * self.elements_per_folders[i])
-        timestamps = element_per_folder_multipliers
-
-        # if self.overpass == 'BOTH':
-        #     timestamps = [item for item in timestamps for _ in range(2)]
-        # else:
-        #     pass
+        if self.overpass == 'BOTH':
+            timestamps = [item for item in timestamps for _ in range(2)]
+        else:
+            pass
         for i, dates in enumerate(idx_chunks(pd.DatetimeIndex(timestamps),
                                              self.imgbuffer)):
 
@@ -847,4 +859,3 @@ class Img2Ts:
             self.input_grid = input_grid
 
             yield (img_dict, timestamps)
-
