@@ -47,7 +47,7 @@ from glob import glob
 import tempfile
 import numpy.testing as nptest
 
-from repurpose.img2ts import Img2Ts
+from src.repurpose.img2ts import Img2Ts
 
 # make a simple mock Dataset that can be used for testing the conversion
 
@@ -208,6 +208,82 @@ def test_img2ts_nonortho_daily_no_resampling():
         ds.close()
         ds_in.close()
 
+def test_img2ts_nonortho_daily_no_resampling_both_overpasses():
+    # in this case the output grid is a subset of the input grid
+    # TODO Test for empty timestamps
+    input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
+                           np.array([1., -1., 1., -1.]),
+                           gpis=[1, 0, 2, 3])
+
+    target_grid = CellGrid(np.array([0.5, 0.5]),
+                           np.array([1., -1.]),
+                           gpis=[1, 0],
+                           cells=np.array([1, 0]))
+
+    with tempfile.TemporaryDirectory() as outputpath:
+        start = datetime(2014, 2, 5)
+        end = datetime(2014, 4, 21)
+
+        ds_in = SomeMultiTemporalImageDatasetDaily(
+            SomeNonOrthogonalImageDataset)
+
+        img2ts = Img2Ts(ds_in,
+                        outputpath, start, end, imgbuffer=10,
+                        input_grid=input_grid,
+                        target_grid=target_grid,
+                        n_proc=1, overpass='BOTH')
+        img2ts.calc()
+
+        assert not img2ts.resample
+
+        ts_should_base = pd.date_range(start, end, freq='D')
+        ts_should_jd_gpi0 = ts_should_base + timedelta(days=0.1)
+        ts_should_jd_gpi1 = ts_should_base + timedelta(days=0.2)
+        ts_should_gpi0 = 20 + ts_should_jd_gpi0.day
+        ts_should_gpi1 = 10 + ts_should_jd_gpi1.day
+        grid = load_grid(os.path.join(outputpath, 'grid.nc'))
+
+        ts_should_jd_gpi0 = ts_should_jd_gpi0.repeat(2)
+        ts_should_jd_gpi1 = ts_should_jd_gpi1.repeat(2)
+        ts_should_gpi0 = ts_should_gpi0.repeat(2)
+        ts_should_gpi1 = ts_should_gpi1.repeat(2)
+
+
+        with GriddedNcIndexedRaggedTs(outputpath, grid=grid) as ds:
+            lon, lat = ds.grid.gpi2lonlat(0)
+            assert lon == 0.5
+            assert lat == -1
+            lon, lat = ds.grid.gpi2lonlat(1)
+            assert lon == 0.5
+            assert lat == 1
+
+            ts = ds.read(0)
+            np.testing.assert_array_equal(ts.index.to_julian_date(),
+                                          ts_should_jd_gpi0.to_julian_date())
+            np.testing.assert_array_equal(ts['var1'].values,
+                                          ts_should_gpi0)
+            ts = ds.read(1)
+            np.testing.assert_array_equal(ts.index.to_julian_date(),
+                                          ts_should_jd_gpi1.to_julian_date())
+            np.testing.assert_array_equal(ts['var1'].values,
+                                          ts_should_gpi1)
+
+            with pytest.raises(IndexError):
+                _ = ds.read(2)
+            ds.close()
+
+        ds = xr.open_dataset(os.path.join(outputpath, '0000.nc'))
+        assert ds.attrs['time_coverage_end'] == '2014-04-21 00:00:00'
+        assert ds.attrs['timeSeries_format'] == 'IndexedRaggedTs'
+
+        np.testing.assert_array_equal(ds['location_id'].data,
+                                      np.array([0]))
+        np.testing.assert_array_equal(ds['lat'].data,
+                                      np.array([-1.]))
+        np.testing.assert_array_equal(ds['lon'].data,
+                                      np.array([0.5]))
+        ds.close()
+        ds_in.close()
 
 def test_img2ts_nonortho_daily_resampling():
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
@@ -264,9 +340,65 @@ def test_img2ts_nonortho_daily_resampling():
         ds.close()
         ds_in.close()
 
+def test_img2ts_nonortho_daily_resampling_both_overpasses():
+    input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
+                           np.array([1., -1., 1., -1.]), )
+
+    target_grid = CellGrid(np.array([0.4, 0.6, -0.4, -0.6]),
+                           np.array([0.9, -1.1, 1.1, -0.9]),
+                           gpis=[5, 1, 19, 11],
+                           cells=[3, 3, 1, 1])
+
+    with tempfile.TemporaryDirectory() as outputpath:
+        start = datetime(2014, 2, 5)
+        end = datetime(2014, 4, 21)
+
+        ds_in = SomeMultiTemporalImageDatasetDaily(
+            SomeNonOrthogonalImageDataset)
+
+        img2ts = Img2Ts(ds_in, outputpath, start, end, imgbuffer=20,
+                        target_grid=target_grid, input_grid=input_grid,
+                        r_neigh=4, n_proc=1, overpass='BOTH')
+        img2ts.calc()
+
+        assert img2ts.resample is True
+
+        assert len(glob(os.path.join(outputpath, '*.nc'))) == 3
+
+        dates_should = ds_in.tstamps_for_daterange(start, end)
+        dates_should = [item for item in dates_should for _ in range(2)]
+        dates_should = pd.DatetimeIndex(dates_should).to_julian_date() + 0.1
+        dates_should = jd2dt(dates_should.values)
+        grid = load_grid(os.path.join(outputpath, 'grid.nc'))
+        ds = GriddedNcIndexedRaggedTs(outputpath, grid=grid)
+        _ = ds.read(5)  # this GPI should have data
+        with pytest.raises(OSError):
+            ds.read(2)  # this one not, because it wasn't in the target grid
+        ts = ds.read(1)  # this one we check later
+        ds.close()
+        assert np.all(dates_should == ts.index)
+        nptest.assert_allclose(ts['var1'], ts.index.day + 20)
+
+        ds_in.close()
+
+        ds = xr.open_dataset(os.path.join(outputpath, '0003.nc'))
+        assert ds.attrs['time_coverage_end'] == '2014-04-21 00:00:00'
+        assert ds.attrs['timeSeries_format'] == 'IndexedRaggedTs'
+
+        np.testing.assert_array_equal(ds['location_id'].data,
+                                      np.array([1, 5]))
+
+        np.testing.assert_array_almost_equal(ds['lat'].data,
+                                             np.array([-1.1, 0.9]))
+
+        nptest.assert_allclose(ds['location_id'].data,
+                               np.array([1, 5]))
+        ds.close()
+        ds_in.close()
+
 def test_img2ts_ortho_daily_no_resampling():
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
-                           np.array([1, -1, 1, -1]), )
+                           np.array([1, -1, 1, -1]),)
 
     with tempfile.TemporaryDirectory() as outputpath:
         start = datetime(2014, 2, 5)
@@ -309,6 +441,54 @@ def test_img2ts_ortho_daily_no_resampling():
         ds.close()
 
 
+def test_img2ts_ortho_daily_no_resampling_both_overpasses():
+    input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
+                           np.array([1, -1, 1, -1]), )
+
+    with tempfile.TemporaryDirectory() as outputpath:
+        start = datetime(2014, 2, 5)
+        end = datetime(2014, 4, 21)
+
+        ds_in = SomeMultiTemporalImageDatasetDaily(
+            cls=SomeOrthogonalImageDataset)
+        img2ts = Img2Ts(ds_in, outputpath, start, end, imgbuffer=20,
+                        input_grid=input_grid, n_proc=2,
+                        cellsize_lat=180, cellsize_lon=360, overpass='BOTH')
+
+        ts_should_gpi0 = pd.date_range(start, end, freq='D').day + 1
+        dates_should = pd.DatetimeIndex(
+            ds_in.tstamps_for_daterange(start, end))
+        ts_should_gpi0 = ts_should_gpi0.repeat(2)
+        dates_should = dates_should.repeat(2)
+
+        img2ts.calc()
+
+        assert img2ts.resample is False
+
+        ts_file = os.path.join(outputpath, '0000.nc')
+
+        grid = load_grid(os.path.join(outputpath, 'grid.nc'))
+        ds = GriddedNcOrthoMultiTs(outputpath, grid)
+        ts = ds.read(0)
+        assert np.all(dates_should == ts.index)
+
+        ds.close()
+        ds_in.close()
+
+        with OrthoMultiTs(ts_file) as ds:
+            ts = ds.read('var1', 0)
+            nptest.assert_allclose(ts['var1'], ts_should_gpi0)
+            nptest.assert_allclose(
+                pd.DatetimeIndex(ts['time']).to_julian_date(),
+                dates_should.to_julian_date())
+            nptest.assert_allclose(ds.dataset.variables['location_id'][:],
+                                   np.array([0, 1, 2, 3]))
+            ds.close()
+
+        ds = xr.open_dataset(ts_file)
+        assert ds.attrs['timeSeries_format'] == 'OrthoMultiTs'
+        assert ds.attrs['time_coverage_end'] == '2014-04-21 00:00:00'
+        ds.close()
 
 def test_img2ts_ortho_daily_resampling():
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
@@ -355,7 +535,65 @@ def test_img2ts_ortho_daily_resampling():
                                       np.array([0, 1, 2, 3]))
 
         np.testing.assert_array_almost_equal(ds['lat'].data,
-                                      np.array([0.9, -1.1,  1.1, -0.9]))
+                                             np.array([0.9, -1.1, 1.1,
+                                                       -0.9]))
+
+        nptest.assert_allclose(ds['location_id'].data,
+                               np.array([0, 1, 2, 3]))
+        ds.close()
+        ds_in.close()
+
+def test_img2ts_ortho_daily_resampling_both_overpasses():
+    input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
+                           np.array([1., -1., 1., -1.]),
+                           gpis=[0, 1, 2, 3])
+
+    target_grid = BasicGrid(np.array([0.4, 0.6, -0.4, -0.6]),
+                            np.array([0.9, -1.1, 1.1, -0.9]))
+
+    with tempfile.TemporaryDirectory() as outputpath:
+        start = datetime(2014, 2, 5)
+        end = datetime(2014, 4, 21)
+
+        ds_in = SomeMultiTemporalImageDatasetDaily(
+            cls=SomeOrthogonalImageDataset)
+        img2ts = Img2Ts(ds_in, outputpath, start, end, imgbuffer=20,
+                        target_grid=target_grid, cellsize_lon=360,
+                        cellsize_lat=180,
+                        input_grid=input_grid, r_neigh=4,
+                        n_proc=1, overpass='BOTH')
+        img2ts.calc()
+
+        assert img2ts.resample is True
+
+        ts_should_gpi0 = pd.date_range(start, end, freq='D').day + 1
+        ts_should_gpi2 = pd.date_range(start, end, freq='D').day + 3
+        dates_should = ds_in.tstamps_for_daterange(start, end)
+        dates_should = [x for x in dates_should for _ in range(2)]
+        ts_should_gpi0 = ts_should_gpi0.repeat(2)
+        ts_should_gpi2 = ts_should_gpi2.repeat(2)
+
+
+        grid = load_grid(os.path.join(outputpath, 'grid.nc'))
+        ds = GriddedNcOrthoMultiTs(outputpath, grid=grid)
+        nptest.assert_allclose(ds.read(0)['var1'], ts_should_gpi0)
+        nptest.assert_allclose(ds.read(2)['var1'], ts_should_gpi2)
+
+        assert np.all(dates_should == ds.read(0).index)
+
+        ds_in.close()
+
+        ds = xr.open_dataset(os.path.join(outputpath, '0000.nc'))
+
+        assert ds.attrs['timeSeries_format'] == 'OrthoMultiTs'
+        assert ds.attrs['time_coverage_end'] == '2014-04-21 00:00:00'
+
+        np.testing.assert_array_equal(ds['location_id'].data,
+                                      np.array([0, 1, 2, 3]))
+
+        np.testing.assert_array_almost_equal(ds['lat'].data,
+                                             np.array([0.9, -1.1, 1.1,
+                                                       -0.9]))
 
         nptest.assert_allclose(ds['location_id'].data,
                                np.array([0, 1, 2, 3]))
@@ -382,6 +620,44 @@ def test_img2ts_ortho_daily_no_resampling_missing_day():
         img2ts.calc()
 
         dates = pd.date_range(start, end, freq='D')
+        idx_to_drop = np.where(dates == '2016-01-01')[0]
+        dates_should = np.delete(dates, idx_to_drop)
+        ts_should_gpi0 = dates_should.day + 1
+
+        ts_file = os.path.join(outputpath, '0000.nc')
+        with OrthoMultiTs(ts_file) as ds:
+            ts = ds.read('var1', 0)
+            nptest.assert_allclose(ts['var1'], ts_should_gpi0)
+            np.all(dates_should == pd.DatetimeIndex(ts['time']))
+            nptest.assert_allclose(ds.dataset.variables['location_id'][:],
+                                   np.array([0, 1, 2, 3]))
+
+        ds = xr.open_dataset(ts_file)
+        assert ds.attrs['timeSeries_format'] == 'OrthoMultiTs'
+        assert ds.attrs['time_coverage_end'] == '2016-01-10 00:00:00'
+        ds.close()
+
+def test_img2ts_ortho_daily_no_resampling_missing_day_both_overpasses():
+    """
+    Test resampling over missing day 2016-01-01 (see reader above)
+    """
+    input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
+                           np.array([1, -1, 1, -1]), )
+
+    with tempfile.TemporaryDirectory() as outputpath:
+        start = datetime(2015, 12, 5)
+        end = datetime(2016, 1, 10)
+
+        ds_in = SomeMultiTemporalImageDatasetDaily(SomeOrthogonalImageDataset)
+        img2ts = Img2Ts(ds_in,
+                        outputpath, start, end, imgbuffer=15,
+                        cellsize_lat=180, cellsize_lon=360,
+                        input_grid=input_grid, ignore_errors=False, overpass='BOTH')
+
+        img2ts.calc()
+
+        dates = pd.date_range(start, end, freq='D')
+        dates = dates.repeat(2)
         idx_to_drop = np.where(dates == '2016-01-01')[0]
         dates_should = np.delete(dates, idx_to_drop)
         ts_should_gpi0 = dates_should.day + 1

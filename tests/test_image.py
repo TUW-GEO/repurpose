@@ -2,7 +2,7 @@ import numpy as np
 import unittest
 import os
 import pandas as pd
-from src.repurpose.stack import Regular3dimImageStack
+from repurpose.stack import Regular3dimImageStack
 import tempfile
 import pytest
 import xarray as xr
