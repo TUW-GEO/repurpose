@@ -440,7 +440,6 @@ def test_img2ts_ortho_daily_no_resampling():
         assert ds.attrs['time_coverage_end'] == '2014-04-21 00:00:00'
         ds.close()
 
-
 def test_img2ts_ortho_daily_no_resampling_both_overpasses():
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
                            np.array([1, -1, 1, -1]), )

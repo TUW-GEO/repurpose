@@ -12,6 +12,7 @@ import pandas as pd
 from pygeobase.object_base import Image
 import warnings
 
+das = 2
 
 class Img2TsError(Exception):
     pass
