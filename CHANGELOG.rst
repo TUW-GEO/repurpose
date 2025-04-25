@@ -4,7 +4,8 @@ Changelog
 
 Unreleased changes in master branch
 ===================================
--
+- Change the write non orthogonal function in the img2ts.py file so it discards
+  non existent time stamps from the timeseries
 
 Version 0.13.1
 ==============
