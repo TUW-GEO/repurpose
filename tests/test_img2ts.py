@@ -47,7 +47,7 @@ from glob import glob
 import tempfile
 import numpy.testing as nptest
 
-from repurpose.img2ts import Img2Ts
+from src.repurpose.img2ts import Img2Ts
 
 # make a simple mock Dataset that can be used for testing the conversion
 
@@ -264,9 +264,10 @@ def test_img2ts_nonortho_daily_resampling():
         ds.close()
         ds_in.close()
 
+
 def test_img2ts_ortho_daily_no_resampling():
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
-                           np.array([1, -1, 1, -1]), )
+                           np.array([1, -1, 1, -1]),)
 
     with tempfile.TemporaryDirectory() as outputpath:
         start = datetime(2014, 2, 5)
@@ -307,7 +308,6 @@ def test_img2ts_ortho_daily_no_resampling():
         assert ds.attrs['timeSeries_format'] == 'OrthoMultiTs'
         assert ds.attrs['time_coverage_end'] == '2014-04-21 00:00:00'
         ds.close()
-
 
 
 def test_img2ts_ortho_daily_resampling():
@@ -355,12 +355,14 @@ def test_img2ts_ortho_daily_resampling():
                                       np.array([0, 1, 2, 3]))
 
         np.testing.assert_array_almost_equal(ds['lat'].data,
-                                      np.array([0.9, -1.1,  1.1, -0.9]))
+                                             np.array([0.9, -1.1, 1.1,
+                                                       -0.9]))
 
         nptest.assert_allclose(ds['location_id'].data,
                                np.array([0, 1, 2, 3]))
         ds.close()
         ds_in.close()
+
 
 def test_img2ts_ortho_daily_no_resampling_missing_day():
     """
@@ -398,3 +400,10 @@ def test_img2ts_ortho_daily_no_resampling_missing_day():
         assert ds.attrs['timeSeries_format'] == 'OrthoMultiTs'
         assert ds.attrs['time_coverage_end'] == '2016-01-10 00:00:00'
         ds.close()
+
+
+
+
+
+
+
