@@ -47,7 +47,7 @@ from glob import glob
 import tempfile
 import numpy.testing as nptest
 
-from src.repurpose.img2ts import Img2Ts
+from repurpose.img2ts import Img2Ts
 
 # make a simple mock Dataset that can be used for testing the conversion
 

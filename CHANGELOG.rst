@@ -4,8 +4,12 @@ Changelog
 
 Unreleased changes in master branch
 ===================================
+-
+
+Version 0.13.2
+==============
 - Change the write non orthogonal function in the img2ts.py file so it discards
-  non existent time stamps from the timeseries
+  non existent time stamps from the timeseries (`PR #42 <https://github.com/TUW-GEO/repurpose/pull/42>`_)
 
 Version 0.13.1
 ==============
