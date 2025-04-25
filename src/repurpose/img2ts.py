@@ -12,7 +12,6 @@ import pandas as pd
 from pygeobase.object_base import Image
 import warnings
 
-das = 2
 
 class Img2TsError(Exception):
     pass
@@ -218,14 +217,11 @@ class Img2Ts:
         backend: str, optional (default: 'threading')
             Which backend joblib should use. Default is 'threading',
             other options are 'multiprocessing' and 'loky'
-        overpass: string, optional
-        Specify AM, PM, or BOTH, depending on the dataset overpass type.
         """
 
         self.backend = backend
         self.imgin = input_dataset
         self.zlib = zlib
-        self.overpass = overpass
 
         if (input_grid is None) and hasattr(self.imgin, 'grid'):
             input_grid = self.imgin.grid
@@ -281,6 +277,7 @@ class Img2Ts:
         self.variable_rename = variable_rename
         self.unlim_chunksize = unlim_chunksize
         self.gridname = gridname
+
         self.r_methods = r_methods
         self.r_weightf = r_weightf
         self.r_min_n = r_min_n
