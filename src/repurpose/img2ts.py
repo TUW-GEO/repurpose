@@ -802,10 +802,6 @@ class Img2Ts:
         timestamps = self.imgin.tstamps_for_daterange(
             self.startdate, self.enddate)
 
-        # if self.overpass == 'BOTH':
-        #     timestamps = [item for item in timestamps for _ in range(2)]
-        # else:
-        #     pass
         for i, dates in enumerate(idx_chunks(pd.DatetimeIndex(timestamps),
                                              self.imgbuffer)):
 
