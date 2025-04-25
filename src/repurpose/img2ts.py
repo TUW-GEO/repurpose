@@ -85,8 +85,7 @@ class Img2Ts:
                  r_neigh=8, r_fill_values=None, filename_templ='%04d.nc',
                  gridname='grid.nc', global_attr=None, ts_attributes=None,
                  ts_dtypes=None, time_units="days since 1858-11-17 00:00:00",
-                 zlib=True, n_proc=1, ignore_errors=False, backend='threading',
-                 overpass='AM'):
+                 zlib=True, n_proc=1, ignore_errors=False, backend='threading'):
         """
         Parameters
         ----------
