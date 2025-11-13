@@ -402,8 +402,3 @@ def test_img2ts_ortho_daily_no_resampling_missing_day():
         ds.close()
 
 
-
-
-
-
-
