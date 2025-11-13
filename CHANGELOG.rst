@@ -4,7 +4,7 @@ Changelog
 
 Unreleased changes in master branch
 ===================================
--
+- Changed a test where the dim order was not time, lat, lon (`PR #44 <https://github.com/TUW-GEO/repurpose/pull/44>`_)
 
 Version 0.13.2
 ==============

@@ -136,9 +136,9 @@ class Regular3dimImageStack:
 
         self.ds = xr.Dataset(
             coords=dict(
-                lon=londim,
-                lat=latdim,
                 time=self.timestamps,
+                lat=latdim,
+                lon=londim,
                 reference_time=self.reference_time))
 
         lon_attr = {

@@ -129,7 +129,7 @@ def test_ts2img_time_collocation_integration():
 
         ds = xr.open_dataset(
             os.path.join(path_out, '2020', 'test_20200708060000.nc'))
-        assert list(ds.dims) == ['lon', 'lat', 'time']
+        assert list(ds.dims) == ['time', 'lat', 'lon']
         assert ds.data_vars.keys() == {'timedelta_seconds', 'var1', 'var2', 'var3'}
 
         # var1 was stored as int, but is float64 after decoding
@@ -240,7 +240,7 @@ def test_ts2img_no_collocation_integration():
         ds3.close()
         ds4.close()
 
-        assert list(ds.dims) == ['lon', 'lat', 'time']
+        assert list(ds.dims) == ['time', 'lat', 'lon']
         assert 'timedelta_seconds' not in ds.data_vars.keys()
         assert np.all(np.isnan(ds['var0'].values))
         assert np.all(ds['var2'].values == -9999)
@@ -280,4 +280,3 @@ def test_ts2img_no_collocation_integration():
         ds.close()   # needed on Windows!
 
         del converter
-
