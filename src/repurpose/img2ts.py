@@ -1,3 +1,5 @@
+from more_itertools.more import is_sorted
+
 from repurpose.process import parallel_process, idx_chunks
 import pynetcf.time_series as nc
 from pygeogrids.grids import CellGrid
@@ -490,6 +492,16 @@ class Img2Ts:
                         'geospatial_lon_min', np.min(cell_lons))
                     dataout.add_global_attr(
                         'geospatial_lon_max', np.max(cell_lons))
+
+                    # sort the data in the cell by their gpi to be compatible
+                    # with old datasets
+
+                    idx = np.argsort(cell_gpis)
+                    cell_gpis = cell_gpis[idx]
+                    cell_lats = cell_lats[idx]
+                    cell_lons = cell_lons[idx]
+
+                    celldata = {k: v[idx] for k, v in celldata.items()}
 
                     dataout.write_all(cell_gpis, celldata, timestamps,
                                       lons=cell_lons, lats=cell_lats,
