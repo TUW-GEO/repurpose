@@ -5,6 +5,7 @@ Changelog
 Unreleased changes in master branch
 ===================================
 - Changed a test where the dim order was not time, lat, lon (`PR #44 <https://github.com/TUW-GEO/repurpose/pull/44>`_)
+- Fixed a bug that led to different order of GPIs in time series cell files (making the data incompatible when appended to previously processed time series) (`PR #45 <https://github.com/TUW-GEO/repurpose/pull/45>`_)
 
 Version 0.13.2
 ==============

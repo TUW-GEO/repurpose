@@ -267,7 +267,7 @@ def test_img2ts_nonortho_daily_resampling():
 
 def test_img2ts_ortho_daily_no_resampling():
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
-                           np.array([1, -1, 1, -1]),)
+                           np.array([1, -1, 1, -1]))
 
     with tempfile.TemporaryDirectory() as outputpath:
         start = datetime(2014, 2, 5)
@@ -369,15 +369,15 @@ def test_img2ts_ortho_daily_no_resampling_missing_day():
     Test resampling over missing day 2016-01-01 (see reader above)
     """
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
-                           np.array([1, -1, 1, -1]), )
+                           np.array([1, -1, 1, -1]),
+                           gpis=[0,1,2,3])
 
     with tempfile.TemporaryDirectory() as outputpath:
         start = datetime(2015, 12, 5)
         end = datetime(2016, 1, 10)
 
         ds_in = SomeMultiTemporalImageDatasetDaily(SomeOrthogonalImageDataset)
-        img2ts = Img2Ts(ds_in,
-                        outputpath, start, end, imgbuffer=15,
+        img2ts = Img2Ts(ds_in, outputpath, start, end, imgbuffer=15,
                         cellsize_lat=180, cellsize_lon=360,
                         input_grid=input_grid, ignore_errors=False)
 
@@ -400,5 +400,3 @@ def test_img2ts_ortho_daily_no_resampling_missing_day():
         assert ds.attrs['timeSeries_format'] == 'OrthoMultiTs'
         assert ds.attrs['time_coverage_end'] == '2016-01-10 00:00:00'
         ds.close()
-
-
