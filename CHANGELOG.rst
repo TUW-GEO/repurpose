@@ -4,7 +4,7 @@ Changelog
 
 Unreleased changes in master branch
 ===================================
--
+- Added ``show_progress_bars`` keyword to ``Img2Ts`` to optionally show progress bars while reading images and writing time series cells
 
 Version 0.13.3
 ==============
