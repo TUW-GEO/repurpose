@@ -86,7 +86,8 @@ class Img2Ts:
                  r_neigh=8, r_fill_values=None, filename_templ='%04d.nc',
                  gridname='grid.nc', global_attr=None, ts_attributes=None,
                  ts_dtypes=None, time_units="days since 1858-11-17 00:00:00",
-                 zlib=True, n_proc=1, ignore_errors=False, backend='threading'):
+                 zlib=True, n_proc=1, ignore_errors=False, backend='threading',
+                 show_progress_bars=False):
         """
         Parameters
         ----------
@@ -219,9 +220,13 @@ class Img2Ts:
         backend: str, optional (default: 'threading')
             Which backend joblib should use. Default is 'threading',
             other options are 'multiprocessing' and 'loky'
+        show_progress_bars: bool, optional (default: False)
+            Show tqdm progress bars for the image reading and the time series
+            writing steps.
         """
 
         self.backend = backend
+        self.show_progress_bars = show_progress_bars
         self.imgin = input_dataset
         self.zlib = zlib
 
@@ -769,7 +774,8 @@ class Img2Ts:
                 logger_name='img2ts',
                 ignore_errors=self.ignore_errors,
                 n_proc=self.n_proc,
-                show_progress_bars=False,
+                show_progress_bars=self.show_progress_bars,
+                progress_bar_label="Writing cells",
                 backend=self.backend,
             )
 
@@ -825,7 +831,8 @@ class Img2Ts:
                 ITER_KWARGS=ITER_KWARGS,
                 STATIC_KWARGS={'target_grid': target_grid,
                                'input_grid': input_grid},
-                show_progress_bars=False,
+                show_progress_bars=self.show_progress_bars,
+                progress_bar_label="Reading images",
                 log_path=os.path.join(self.outputpath, '000_log'),
                 log_filename=self.log_filename,
                 loglevel="INFO",

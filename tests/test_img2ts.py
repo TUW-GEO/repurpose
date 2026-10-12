@@ -138,6 +138,32 @@ class SomeMultiTemporalImageDatasetDaily(MultiTemporalImageBase):
         return timestamps
 
 
+@pytest.mark.parametrize("show_progress_bars", [False, True])
+def test_img2ts_progress_bars(capfd, show_progress_bars):
+    input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
+                           np.array([1., -1., 1., -1.]),
+                           gpis=[1, 0, 2, 3])
+
+    target_grid = CellGrid(np.array([0.5, 0.5]),
+                           np.array([1., -1.]),
+                           gpis=[1, 0],
+                           cells=np.array([1, 0]))
+
+    with tempfile.TemporaryDirectory() as outputpath:
+        ds_in = SomeMultiTemporalImageDatasetDaily(
+            SomeNonOrthogonalImageDataset)
+
+        img2ts = Img2Ts(ds_in, outputpath, datetime(2014, 2, 5),
+                        datetime(2014, 2, 15), imgbuffer=10,
+                        input_grid=input_grid, target_grid=target_grid,
+                        n_proc=1, show_progress_bars=show_progress_bars)
+        img2ts.calc()
+
+    err = capfd.readouterr().err
+    assert ("Reading images" in err) == show_progress_bars
+    assert ("Writing cells" in err) == show_progress_bars
+
+
 def test_img2ts_nonortho_daily_no_resampling():
     # in this case the output grid is a subset of the input grid
     input_grid = BasicGrid(np.array([0.5, 0.5, -0.5, -0.5]),
