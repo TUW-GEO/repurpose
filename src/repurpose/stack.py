@@ -298,9 +298,10 @@ class Regular3dimImageStack:
         collocated["__distance_other"] = (
             collocated["__index_other"] - collocated.index)
 
-        # force int64, otherwise error on Windows
-        offset_sec = collocated['__distance_other'].values.astype(
-            np.int64) * 1e-9
+        # resolution-independent offset in seconds (pandas may store
+        # timedeltas in nanoseconds or microseconds)
+        offset_sec = collocated['__distance_other'].dt.total_seconds(
+        ).values
 
         collocated[self.timedelta_seconds] = offset_sec
         collocated.drop(
@@ -400,7 +401,7 @@ class Regular3dimImageStack:
                                               not in self.timestamps):
                     # find the closest time stamp and add time deltas
                     delta = pd.to_datetime(timestamp) - self.timestamps
-                    delta = delta.total_seconds().values
+                    delta = delta.total_seconds().values.copy()
                     delta[delta < 0] = np.inf
                     t = np.argmin(delta)
                     dt = np.full((len(row),), delta[t])
