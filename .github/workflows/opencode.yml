@@ -8,9 +8,13 @@ on:
 
 jobs:
   opencode:
+    # Ignore bot comments (prevents OpenCode triggering itself) and
+    # only allow owner, org members and collaborators
     if: |
-      contains(github.event.comment.body, '/oc') ||
-      contains(github.event.comment.body, '/opencode')
+      github.event.comment.user.type != 'Bot' &&
+      (contains(github.event.comment.body, '/oc') ||
+       contains(github.event.comment.body, '/opencode')) &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -28,6 +32,7 @@ jobs:
           TUW_API_URL: ${{ secrets.TUW_API_URL }}
           OPENCODE_CONFIG_CONTENT: |
             {
+              "share": "disabled",
               "provider": {
                 "tuw": {
                   "npm": "@ai-sdk/openai-compatible",
@@ -42,3 +47,4 @@ jobs:
             }
         with:
           model: tuw/main
+          share: false
