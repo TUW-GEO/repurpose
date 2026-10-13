@@ -27,7 +27,7 @@ are alternatives to this package which might be better for your use case. See
 
 The readers and writers have to conform to the API specifications of the base
 classes defined in `pygeobase <https://github.com/TUW-GEO/pygeobase>`_ to work
-without adpation.
+without adaptation.
 
 Installation
 ============
@@ -110,8 +110,8 @@ Guidelines
 If you want to contribute please follow these steps:
 
 - Fork the repurpose repository to your account
-- make a new feature branch from the repurpose master branch
+- Make a new feature branch from the repurpose master branch
 - Add your feature
 - Please include tests for your contributions in one of the test directories.
   We use py.test so a simple function called test_my_feature is enough
-- submit a pull request to our master branch
+- Submit a pull request to our master branch
